@@ -20,15 +20,12 @@ class DespachoPedidoProceso extends Proceso {
                 if (casillero.getEstado() == EstadoCasillero.OCUPADO) { // Verifica que el casillero esté ocupado
                     casillero.setEstado(EstadoCasillero.VACIO); // Simula la liberación del casillero
                     sistema.moverPedidoAEntregados(pedido);
-                  //FALTA REGISTRAR EL LOG (DESPACHADO)
                     return;
                 } else {
                     intentos++;
-                  //REGISTRAR EL CASILLERO COMO OCUPADO
                 }
             }
             sistema.moverPedidoAFallidos(pedido);
-          //REGISTRAR QUE NO SE PUDO DESPACHAR EL PEDIDO
         }
     }
 }
