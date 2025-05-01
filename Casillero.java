@@ -4,7 +4,7 @@ public class Casillero {
     private int contador;
 
     public Casillero() {
-        this.pedido = new Pedido<>();
+        this.pedido = null;
         this.estado = EstadoCasillero.VACIO;
         this.contador = 0;
     }
@@ -26,7 +26,7 @@ public class Casillero {
     }
 
     public void setPedido(EstadoPedido estadoPedido) {
-        this.pedido.setEstado(estadoPedido);
+        this.pedido.setEstadoPedido(estadoPedido);
     }
 
     public EstadoPedido getPedido(){
