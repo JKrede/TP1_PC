@@ -3,7 +3,7 @@ public enum EstadoPedido {
     VERIFICADO,
     FALLIDO,
     ENTREGADO,
-    En_TRANSITO,
+    EN_TRANSITO,
     
     
 
