@@ -1,6 +1,4 @@
-import java.util.Random;
-
-public class PreparadorDePedidos implements Runnable {
+public class PreparadorDePedidos extends Thread {
     private final Sistema sistema;
     private final int duracion = 100; //en milisegundos
     private Pedido pedido;
@@ -22,28 +20,18 @@ public class PreparadorDePedidos implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-
-                    Random generador = new Random();
-                    boolean casilleroOcupado = true;
-
-                    // Repite hasta encontrar un casillero vacío
-                    while (casilleroOcupado && !Thread.currentThread().isInterrupted()) {
-
-                        int posAleatoria = generador.nextInt(200);
-
-                        // Verificar si el casillero está vacío
-                        if (sistema.getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
-
-                            pedido.setEstado(EstadoPedido.EN_PREPARACION);
-                            sistema.getCasillero(posAleatoria).ocupar(pedido);
-                            sistema.getListadoEnPreparacion().add(pedido);
-
-                            casilleroOcupado = false;
-                            Thread.sleep(duracion);
-                        }
-                    }
-
-            } catch (InterruptedException e) {
+                int posAleatoria = sistema.getPosicionCasilleroEnPreparacionAleatorio();
+                //-1 entonces no hay casillero vacios
+                if ( posAleatoria == -1){
+                    interrupt();
+                    break;
+                }
+                pedido.setEstado(EstadoPedido.EN_PREPARACION);
+                sistema.getCasillero(posAleatoria).ocupar(pedido);
+                sistema.getListadoEnPreparacion().add(pedido);
+                Thread.sleep(duracion);
+            }
+            catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }

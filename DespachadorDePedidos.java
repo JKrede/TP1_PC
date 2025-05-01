@@ -17,11 +17,12 @@ public class DespachadorDePedidos implements Runnable {
                     if (!sistema.getListadoEnPreparacion().isEmpty()) {
                         Random generador = new Random();
                         //Posicion aleatoria de la lista
+
                         int posAleatoria = generador.nextInt(sistema.getListadoEnPreparacion().size());
 
                         //El pedido y el id del casillero en el que se encuentra
-                        Pedido pedido = sistema.getListadoEnTransito().get(posAleatoria);
-                        int idCasillero = sistema.getListadoEnTransito().get(posAleatoria).getCasilleroAsignado().getId();
+                        Pedido pedido = sistema.getListadoEnPreparacion().get(posAleatoria);
+                        int idCasillero = sistema.getListadoEnPreparacion().get(posAleatoria).getCasilleroAsignado().getId();
 
                         //Simula el experimento aleatorio de que la informacion sea correcta o no
                         double resultado = generador.nextDouble(1.00);

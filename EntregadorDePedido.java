@@ -13,29 +13,19 @@ public class EntregadorDePedido implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                Pedido pedido = sistema.getPedidoDeListaEnTransitoRemovidoAleatorio();
+                //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
+                double resultado = new Random().nextDouble(1.00);
 
-                    if (!sistema.getListadoEnTransito().isEmpty()) {
-                        Random generador = new Random();
-                        //Posicion aleatoria de la lista
-                        int posAleatoria = generador.nextInt(sistema.getListadoEnTransito().size());
-
-                        //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
-                        double resultado = generador.nextDouble(1.00);
-
-                        //El pedido y el id del casillero en el que se encuentra
-                        Pedido pedido = sistema.getListadoEnTransito().get(posAleatoria);
-
-                        if (ProbDeConfrmacion >= resultado) {
-                            sistema.getListadoEnTransito().remove(pedido);
-                            sistema.getListadoEntregados().add(pedido);
-                        } else {
-                            sistema.getListadoEnTransito().remove(pedido);
-                            sistema.getListadoFallidos().add(pedido);
-                            sistema.getLog().incCantPedidosFallidos();
-                        }
-                        Thread.sleep(duracion);
-                    }
-
+                if (ProbDeConfrmacion >= resultado) {
+                    sistema.getListadoEnTransito().remove(pedido);
+                    sistema.getListadoEntregados().add(pedido);
+                } else {
+                    sistema.getListadoEnTransito().remove(pedido);
+                    sistema.getListadoFallidos().add(pedido);
+                    sistema.getLog().incCantPedidosFallidos();
+                }
+                Thread.sleep(duracion);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

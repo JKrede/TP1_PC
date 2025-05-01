@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Sistema {
     public static final int CANT_CASILLEROS = 200;
@@ -50,6 +51,43 @@ public class Sistema {
             return pedidosEnPreparacion;
         }
     }
+
+    public Pedido getPedidoDeListaEnTransitoRemovidoAleatorio() {
+        synchronized (lockTransito) {
+            if (pedidosEnTransito.isEmpty()){
+                return null;
+            }
+            int posAleatoria = new Random().nextInt(pedidosEnTransito.size());
+            Pedido pedido = pedidosEnTransito.get(posAleatoria);
+            pedidosEnTransito.remove(posAleatoria);
+            return pedido;
+        }
+    }
+    public int getPosicionCasilleroEnPreparacionAleatorio() {
+        synchronized (lockPreparacion) {
+
+            boolean hayCasillerosVacios = false;
+            //Verifica que haya algun casillero vacio
+            for (int i = 0; i < CANT_CASILLEROS; i++){
+                if(matrizDeCasilleros[i].getEstado()==EstadoCasillero.VACIO){
+                    hayCasillerosVacios = true;
+                    break;
+                }
+            }
+            // Repite hasta encontrar un casillero vacío
+            while (hayCasillerosVacios) {
+                int posAleatoria = new Random().nextInt(CANT_CASILLEROS);
+                // Verificar si el casillero está vacío
+                if (getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
+                    return posAleatoria;
+                }
+            }
+            // hayCasillerosVacios siempre va a ser false
+            int aux = hayCasillerosVacios ? 0 : -1;
+            return aux;
+        }
+    }
+
 
     public List<Pedido> getListadoEnTransito() {
         synchronized (lockTransito) {

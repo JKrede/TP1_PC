@@ -4,7 +4,7 @@ public class Casillero {
     private Pedido pedido;
     private EstadoCasillero estado;
     private int vecesOcupado;
-    private Object lockCasillero = new Object();
+    private final Object lockCasillero = new Object();
 
     public Casillero(int id) {
         this.id = id;
