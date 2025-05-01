@@ -26,9 +26,13 @@ public class VerificadorDePedido implements Runnable {
                         Pedido pedido = sistema.getListadoEntregados().get(posAleatoria);
 
                         if (ProbDeVerificacion >= resultado) {
-                            sistema.ListarEnVerificados(pedido);
+                            sistema.getListadoEntregados().remove(pedido);
+                            sistema.getListadoVerificados().add(pedido);
+                            sistema.getLog().incCantPedidosVerificados();
                         } else {
-                            sistema.ListarEnFallidos(pedido);
+                            sistema.getListadoEntregados().remove(pedido);
+                            sistema.getListadoFallidos().add(pedido);
+                            sistema.getLog().incCantPedidosFallidos();
                         }
                         Thread.sleep(duracion);
                     }

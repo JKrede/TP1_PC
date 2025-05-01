@@ -33,8 +33,11 @@ public class PreparadorDePedidos implements Runnable {
 
                         // Verificar si el casillero está vacío
                         if (sistema.getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
+
                             pedido.setEstado(EstadoPedido.EN_PREPARACION);
                             sistema.getCasillero(posAleatoria).ocupar(pedido);
+                            sistema.getListadoEnPreparacion().add(pedido);
+
                             casilleroOcupado = false;
                             Thread.sleep(duracion);
                         }

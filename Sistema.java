@@ -1,17 +1,23 @@
+import java.util.List;
 import java.util.ArrayList;
 
 public class Sistema {
     public static final int CANT_CASILLEROS = 200;
     private final Casillero[] matrizDeCasilleros = new Casillero[CANT_CASILLEROS];
 
-    private final ArrayList<Pedido> pedidosEnPreparacion = new ArrayList<>();
-    private final ArrayList<Pedido> pedidosEnTransito = new ArrayList<>();
-    private final ArrayList<Pedido> pedidosEntregados = new ArrayList<>();
-    private final ArrayList<Pedido> pedidosVerificados = new ArrayList<>();
-    private final ArrayList<Pedido> pedidosFallidos = new ArrayList<>();
+    private final List<Pedido> pedidosEnPreparacion = new ArrayList<>();
+    private final List<Pedido> pedidosEnTransito = new ArrayList<>();
+    private final List<Pedido> pedidosEntregados = new ArrayList<>();
+    private final List<Pedido> pedidosVerificados = new ArrayList<>();
+    private final List<Pedido> pedidosFallidos = new ArrayList<>();
     private final Log log;
-    //mas de un lock?
-    private final Object lock = new Object();
+
+    private final Object lockPreparacion = new Object();
+    private final Object lockTransito = new Object();
+    private final Object lockEntrega = new Object();
+    private final Object lockVerificacion = new Object();
+    private final Object lockFallido = new Object();
+    private final Object lockLog = new Object();
 
     public Sistema(Log log) {
         for (int i = 0; i < CANT_CASILLEROS; i++) {
@@ -24,12 +30,12 @@ public class Sistema {
         if (index < 0 || index >= CANT_CASILLEROS) {
             throw new IndexOutOfBoundsException("Índice de casillero inválido");
         }
-        synchronized (lock) {
             return matrizDeCasilleros[index];
-        }
     }
+
     /**
      * Recorre la matriz de casilleros e incrementa la cantidad de casilleros fuera de servicio en el log
+     * se usa una vez
      */
     public void refreshCantCasillerosFueraDeServicio() {
         for (int i = 0; i < CANT_CASILLEROS; i++) {
@@ -38,67 +44,40 @@ public class Sistema {
             }
         }
     }
-    public ArrayList<Pedido> getListadoEnPreparacion() {
-        return pedidosEnPreparacion;
-    }
 
-    public ArrayList<Pedido> getListadoEnTransito() {
-        return pedidosEnTransito;
-    }
-
-    public ArrayList<Pedido> getListadoEntregados() {
-        return pedidosEntregados;
-    }
-
-    public ArrayList<Pedido> getListadoVerificados() {
-        return pedidosVerificados;
-    }
-
-    public ArrayList<Pedido> getListadoFallidos() {
-        return pedidosFallidos;
-    }
-
-    public void ListarEnPreparacion(Pedido pedido) {
-        if(pedido!=null){
-            synchronized (lock) {
-                pedidosEnPreparacion.add(pedido);
-            }
-        }
-        else{
-            throw new IllegalArgumentException("Pedido y casillero no pueden ser null");
+    public List<Pedido> getListadoEnPreparacion() {
+        synchronized (lockPreparacion) {
+            return pedidosEnPreparacion;
         }
     }
 
-    public void ListarEnTransito(Pedido pedido) {
-        synchronized (lock) {
-            if (pedidosEnPreparacion.remove(pedido)) {
-                pedidosEnTransito.add(pedido);
-            }
+    public List<Pedido> getListadoEnTransito() {
+        synchronized (lockTransito) {
+            return pedidosEntregados;
         }
     }
 
-    public void ListarEnEntregados(Pedido pedido) {
-        synchronized (lock) {
-            if (pedidosEnTransito.remove(pedido)) {
-                pedidosEntregados.add(pedido);
-            }
+    public List<Pedido> getListadoEntregados() {
+        synchronized (lockEntrega) {
+            return pedidosEntregados;
         }
     }
 
-    public void ListarEnVerificados(Pedido pedido) {
-        synchronized (lock) {
-            if (pedidosEntregados.remove(pedido)) {
-                pedidosVerificados.add(pedido);
-                log.incCantPedidosVerificados();
-            }
+    public List<Pedido> getListadoVerificados() {
+        synchronized (lockVerificacion) {
+            return pedidosVerificados;
         }
     }
 
-    public void ListarEnFallidos(Pedido pedido) {
-        synchronized (lock) {
-            pedidosFallidos.add(pedido);
-            log.incCantPedidosFallidos();
+    public List<Pedido> getListadoFallidos() {
+        synchronized (lockFallido) {
+            return pedidosFallidos;
         }
     }
 
+    public Log getLog(){
+        synchronized (lockLog) {
+            return log;
+        }
+    }
 }

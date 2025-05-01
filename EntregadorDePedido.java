@@ -26,9 +26,12 @@ public class EntregadorDePedido implements Runnable {
                         Pedido pedido = sistema.getListadoEnTransito().get(posAleatoria);
 
                         if (ProbDeConfrmacion >= resultado) {
-                            sistema.ListarEnEntregados(pedido);
+                            sistema.getListadoEnTransito().remove(pedido);
+                            sistema.getListadoEntregados().add(pedido);
                         } else {
-                            sistema.ListarEnFallidos(pedido);
+                            sistema.getListadoEnTransito().remove(pedido);
+                            sistema.getListadoFallidos().add(pedido);
+                            sistema.getLog().incCantPedidosFallidos();
                         }
                         Thread.sleep(duracion);
                     }
