@@ -52,6 +52,18 @@ public class Sistema {
         }
     }
 
+    public Pedido getPedidoDeListaEntregadosRemovidoAleatorio() {
+        synchronized (lockEntrega) {
+            if (pedidosEntregados.isEmpty()){
+                return null;
+            }
+            int posAleatoria = new Random().nextInt(pedidosEntregados.size());
+            Pedido pedido = pedidosEntregados.get(posAleatoria);
+            pedidosEntregados.remove(posAleatoria);
+            return pedido;
+        }
+    }
+
     public Pedido getPedidoDeListaEnTransitoRemovidoAleatorio() {
         synchronized (lockTransito) {
             if (pedidosEnTransito.isEmpty()){
@@ -87,7 +99,6 @@ public class Sistema {
             return aux;
         }
     }
-
 
     public List<Pedido> getListadoEnTransito() {
         synchronized (lockTransito) {
