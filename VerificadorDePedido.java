@@ -1,20 +1,40 @@
-public class VerificadorDePedido {
-    private String pedidoId;
+import java.util.Random;
 
-    // Constructor: Recibe el ID del pedido a verificar
-    public VerificadorDePedido(String pedidoId) {
-        this.pedidoId = pedidoId;
+public class VerificadorDePedido implements Runnable {
+    private Sistema sistema;
+    private final int duracion = 100; //en milisegundos
+    private final double ProbDeVerificacion = 0.95;
+
+    public VerificadorDePedido(Sistema sistema) {
+        this.sistema = sistema;
     }
 
-    // Verifica si el pedido está listo para entrega
-    public boolean verificarDisponibilidad() {
-        // Lógica simulada: Consulta una base de datos o API
-        System.out.println("Verificando disponibilidad del pedido " + pedidoId);
-        return Math.random() > 0.2; // Simula un 80% de éxito
-    }
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
 
-    // Valida la dirección de entrega
-    public boolean validarDireccion(String direccion) {
-        return direccion != null && !direccion.trim().isEmpty();
+                    if (!sistema.getListadoEntregados().isEmpty()) {
+                        Random generador = new Random();
+                        //Posicion aleatoria de la lista
+                        int posAleatoria = generador.nextInt(sistema.getListadoEntregados().size());
+
+                        //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
+                        double resultado = generador.nextDouble(1.00);
+
+                        //El pedido y el id del casillero en el que se encuentra
+                        Pedido pedido = sistema.getListadoEntregados().get(posAleatoria);
+
+                        if (ProbDeVerificacion >= resultado) {
+                            sistema.ListarEnVerificados(pedido);
+                        } else {
+                            sistema.ListarEnFallidos(pedido);
+                        }
+                        Thread.sleep(duracion);
+                    }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

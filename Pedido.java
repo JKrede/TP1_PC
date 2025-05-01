@@ -1,13 +1,34 @@
 
 public class Pedido {
-
+    private static int CONTADOR=0;
+    private final int id;
     private EstadoPedido estado;
-    private int id;
+    private Casillero casilleroAsignado;
+
+    public Pedido() {
+        this.id = Pedido.CONTADOR++;
+        estado = EstadoPedido.CREADO;
+        casilleroAsignado = null;
+    }
+
+    public void setEstado(EstadoPedido estado){
+        this.estado = estado;
+    }
+
+    public void setCasilleroAsignado(Casillero casilleroAsignado) {
+        this.casilleroAsignado = casilleroAsignado;
+    }
 
 
-    public Pedido() {}
-    public void setEstadoPedido(EstadoPedido estado){ this.estado = estado}
-    public void setId(int id){ this.id = id}
-    public EstadoPedido getEstado(){return estado}
-    public int getId(){return id}
+    public EstadoPedido getEstado(){
+        return estado;
+    }
+
+    public Casillero getCasilleroAsignado(){
+        return casilleroAsignado;
+    }
+
+    public int getId(){
+        return id;
+    }
 }

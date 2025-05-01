@@ -1,63 +1,104 @@
 import java.util.ArrayList;
 
 public class Sistema {
-    //Matriz de casilleros
-    private final Casillero[] matrizDeCasilleros = new Casillero[200];
+    public static final int CANT_CASILLEROS = 200;
+    private final Casillero[] matrizDeCasilleros = new Casillero[CANT_CASILLEROS];
 
-    //Listados de pedidos en distintos estado
     private final ArrayList<Pedido> pedidosEnPreparacion = new ArrayList<>();
     private final ArrayList<Pedido> pedidosEnTransito = new ArrayList<>();
     private final ArrayList<Pedido> pedidosEntregados = new ArrayList<>();
+    private final ArrayList<Pedido> pedidosVerificados = new ArrayList<>();
     private final ArrayList<Pedido> pedidosFallidos = new ArrayList<>();
-
-    // Lock para secciones criticas dentro de Sistema
+    private final Log log;
+    //mas de un lock?
     private final Object lock = new Object();
 
-    public Sistema() {
-        // Creacion de casilleros con el id por posicion que ocupa en la matriz
-        for (int i = 0; i < 200; i++) {
+    public Sistema(Log log) {
+        for (int i = 0; i < CANT_CASILLEROS; i++) {
             matrizDeCasilleros[i] = new Casillero(i);
         }
+        this.log = log;
     }
-    // Accede al casillero mediante el indice
+
     public Casillero getCasillero(int index) {
-        if (index < 0 || index >= 200) {
-            throw new IllegalArgumentException("Índice de casillero inválido");
+        if (index < 0 || index >= CANT_CASILLEROS) {
+            throw new IndexOutOfBoundsException("Índice de casillero inválido");
         }
         synchronized (lock) {
             return matrizDeCasilleros[index];
         }
     }
-
-    // Agrega el pedido en preparacion a la lista de pedidos en preparacion
-    public void moverPedidoAPreparacion(Pedido pedido) {
-        synchronized (lock) {
-            pedidosEnPreparacion.add(pedido);
+    /**
+     * Recorre la matriz de casilleros e incrementa la cantidad de casilleros fuera de servicio en el log
+     */
+    public void refreshCantCasillerosFueraDeServicio() {
+        for (int i = 0; i < CANT_CASILLEROS; i++) {
+            if (matrizDeCasilleros[i].getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                log.incCantCasillerosFueraDeServicio();
+            }
         }
     }
-    //Verifica que el pedido este en la lista de pedidos en preparacion y lo mueve a pedidos en transito
-    public void moverPedidoATransito(Pedido pedido) {
+    public ArrayList<Pedido> getListadoEnPreparacion() {
+        return pedidosEnPreparacion;
+    }
+
+    public ArrayList<Pedido> getListadoEnTransito() {
+        return pedidosEnTransito;
+    }
+
+    public ArrayList<Pedido> getListadoEntregados() {
+        return pedidosEntregados;
+    }
+
+    public ArrayList<Pedido> getListadoVerificados() {
+        return pedidosVerificados;
+    }
+
+    public ArrayList<Pedido> getListadoFallidos() {
+        return pedidosFallidos;
+    }
+
+    public void ListarEnPreparacion(Pedido pedido) {
+        if(pedido!=null){
+            synchronized (lock) {
+                pedidosEnPreparacion.add(pedido);
+            }
+        }
+        else{
+            throw new IllegalArgumentException("Pedido y casillero no pueden ser null");
+        }
+    }
+
+    public void ListarEnTransito(Pedido pedido) {
         synchronized (lock) {
             if (pedidosEnPreparacion.remove(pedido)) {
                 pedidosEnTransito.add(pedido);
             }
         }
     }
-    //Verifica que el pedido este en la lista de pedidos en transito y lo mueve a pedidos entregados
-    public void moverPedidoAEntregados(Pedido pedido) {
+
+    public void ListarEnEntregados(Pedido pedido) {
         synchronized (lock) {
             if (pedidosEnTransito.remove(pedido)) {
                 pedidosEntregados.add(pedido);
             }
         }
     }
-    // Agrega el pedido en preparacion a la lista de pedidos en preparacion
-    public void moverPedidoAFallidos(Pedido pedido) {
+
+    public void ListarEnVerificados(Pedido pedido) {
         synchronized (lock) {
-            //Un pedido puede resultar fallido desde cualquier lista
-            pedidosFallidos.add(pedido);
+            if (pedidosEntregados.remove(pedido)) {
+                pedidosVerificados.add(pedido);
+                log.incCantPedidosVerificados();
+            }
         }
     }
 
+    public void ListarEnFallidos(Pedido pedido) {
+        synchronized (lock) {
+            pedidosFallidos.add(pedido);
+            log.incCantPedidosFallidos();
+        }
+    }
 
 }

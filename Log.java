@@ -1,30 +1,78 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 public class Log {
-    private Sistema sistema;
-    private long tiempoTotalDemora;
 
-    public void setTiempoTotalDemora(long tiempoTotalDemora){this.tiempoTotalDemora = tiempoTotalDemora}
-    public Log(Sistema sistema){this.sistema = sistema}
+    static final int INTERVALO_DE_CAPTURA = 200; // milisegundos
+    private int cantPedidosVerificados;
+    private int cantPedidosFallidos;
+    private final int cantCasilleros = Sistema.CANT_CASILLEROS;
+    private int cantCasillerosFueraDeServicio;
+    private long tiempoInicio = System.currentTimeMillis();
 
+    FileWriter archivo = null;
+    PrintWriter escritor = null;
 
-    public void imprimirHistorial(){
-        int pedidosVerificados = sistema.getPedidosVerificados().size();
-        int pedidosFallidos = sistema.getPedidosFallidos().size();
-        int casillerosVacios = 0;
-        int casillerosOcupados = 0;
-
-        for(int i =0; i < 200; i++){
-            Casillero casillero = sistema.getCasillero(i);
-            if(casillero.getEstado() == EstadoCasillero.VACIO){
-                casillerosVacios = casillerosOcupados + 1;
-            }
-            else if (casillero.getEstado() == EstadoCasillero.OCUPADO){
-                casillerosOcupados = casillerosOcupados + 1;
-            }
-        }
-        System.out.println("Cantidad de pedidos Verificados: " + pedidosVerificados);
-        System.out.println("Cantidad de pedidos Fallidos: " + pedidosFallidos);
-        System.out.println("Cantidad de casilleros Ocupados: " + casillerosOcupados);
-        System.out.println("Cantidad de casilleros Vacios: " + casillerosVacios);
-        System.out.println("Tiempo total de demora: " + tiempoTotalDemora);
+    public Log() {
+        cantPedidosVerificados = 0;
+        cantPedidosFallidos = 0;
+        cantCasillerosFueraDeServicio = 0;
     }
+
+    public void incCantPedidosVerificados(){
+        cantPedidosVerificados++;
+    }
+
+    public void incCantPedidosFallidos(){
+        cantPedidosFallidos++;
+    }
+
+    public void incCantCasillerosFueraDeServicio(){
+        cantCasillerosFueraDeServicio++;
+    }
+
+    public String getFecha() {
+        Calendar calendario = Calendar.getInstance();
+        SimpleDateFormat fecha = new SimpleDateFormat("dd/MM HH:mm:ss");
+        return fecha.format(calendario.getTime());
+    }
+
+    public String getHora() {
+        Calendar calendario = Calendar.getInstance();
+        SimpleDateFormat hora = new SimpleDateFormat("HH:mm:ss:SSS");
+        return hora.format(calendario.getTime());
+    }
+
+    public void crearArchivo() throws IOException {
+        String fecha = this.getFecha().replace("/", "-").replace(":", "_");
+        archivo = new FileWriter("Log_" + fecha + ".txt");
+        escritor = new PrintWriter(archivo);
+    }
+
+    public void escribirHistorial() {
+        if (escritor == null) {
+            throw new IllegalStateException("Archivo no inicializado");
+        }
+        escritor.println(getHora());
+        escritor.println("Pedidos fallidos: " + cantPedidosFallidos);
+        escritor.println("Pedidos verificados: " + cantPedidosVerificados);
+    }
+
+    public void escribirFinalHistorial() {
+        if (escritor == null) {
+            throw new IllegalStateException("Archivo no inicializado.");
+        }
+        long tiempoFinal = System.currentTimeMillis();
+        double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
+
+        escritor.println("Casilleros disponibles: " + (cantCasilleros - cantCasillerosFueraDeServicio));
+        escritor.println("Casilleros fuera de servicio: " + cantCasillerosFueraDeServicio);
+        escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
+
+        escritor.close();
+    }
+
 }

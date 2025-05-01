@@ -3,49 +3,32 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args){
-        // Arranco a medir el tiempo de ejecucion del programa
-        long tiempoInicio = System.currentTimeMillis();
-        // Creo el sistema
-        Sistema sistema = new Sistema();
-        // Creo el Log
-        Log log = new Log(sistema);
-        // Creo la lista de hilos para simplificar la escritura
-        List<Thread> hilos = new ArrayList<>();
-        // Creo y agrego hilos para cada clase de Registros
-        for (int i = 0; i < 3; i++){
-            hilos.add(new Thread(new PreparacionPedidos(sistema)));
-            hilos.add(new Thread(new EntregaPedido(sistema)));
+        List<Pedido> listaPedidos = new ArrayList<>();
+
+        Log log = new Log();
+
+        Sistema sistema = new Sistema(log);
+
+        Thread preparadorDePedidos1 = new Thread(new PreparadorDePedidos(sistema)); //Hilo 1
+        Thread preparadorDePedidos2 = new Thread(new PreparadorDePedidos(sistema)); //Hilo 2
+        Thread preparadorDePedidos3 = new Thread(new PreparadorDePedidos(sistema)); //Hilo 3
+
+        Thread despachadorDePedidos1 = new Thread(new DespachadorDePedidos(sistema)); //Hilo 4
+        Thread despachadorDePedidos2 = new Thread(new DespachadorDePedidos(sistema)); //Hilo 5
+
+        Thread entregadorDePedidos1 = new Thread(new EntregadorDePedido(sistema)); //Hilo 6
+        Thread entregadorDePedidos2 = new Thread(new EntregadorDePedido(sistema)); //Hilo 7
+        Thread entregadorDePedidos3 = new Thread(new EntregadorDePedido(sistema)); //Hilo 8
+
+        Thread verificadorDePedidos1 = new Thread(new VerificadorDePedido(sistema)); //Hilo 9
+        Thread verificadorDePedidos2 = new Thread(new VerificadorDePedido(sistema)); //Hilo 10
+
+        // Crea 500 pedidos
+        for (int i = 0; i < 500; i++) {
+            Pedido pedido = new Pedido();
+            listaPedidos.add(pedido);
         }
-        for (int i = 0; i < 2; i++){
-            hilos.add(new Thread(new TransitoPedidos(sistema)));
-            hilos.add(new Thread(new VerificacionPedido(sistema)));
-        }
-        // Inicializo todos los hilos
-        for (Thread hilo : hilos){
-            hilo.start();
-        }
-        // Mediante Runtime accedo cuando el programa es por finalizar para despues tomar las estadisticas
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Cerrando Sistema");
-            // Interrumpo los hilos
-            for (Thread hilo : hilos){
-                hilo.interrupt();
-            }
-            // Hago esperar al hilo Main
-            for (Thread hilo : hilos){
-                try {
-                    hilo.join();
-                } catch (InterruptedException e){
-                    e.printStackTrace();
-                    Thread.currentThread().interrupt();
-                }
-            }
-            // Mido el tiempo final
-            long tiempoFinal = System.currentTimeMillis();
-            long tiempoTotal = tiempoFinal - tiempoInicio;
-            // Seteo el tiempo al log
-            log.setTiempoTotalDemora(tiempoTotal);
-            log.imprimirHistorial();
-        }));
+
+
     }
 }
