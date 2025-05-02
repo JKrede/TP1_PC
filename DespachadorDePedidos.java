@@ -2,8 +2,9 @@ import java.util.Random;
 
 public class DespachadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 100; //en milisegundos
+    private final int duracion = 100;
     private final double probInfoCorrecta = 0.85;
+    private final Random generador = new Random();
 
     public DespachadorDePedidos(Sistema sistema) {
         this.sistema = sistema;
@@ -13,36 +14,32 @@ public class DespachadorDePedidos implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                Pedido pedido = sistema.getPedidoListadoEnPreparacionRemovidoAleatorio();
+                
+                if (pedido != null) {
+                    int idCasillero = pedido.getCasilleroAsignado().getId();
+                    double resultado = generador.nextDouble();
 
-                    if (!sistema.getListadoEnPreparacion().isEmpty()) {
-                        Random generador = new Random();
-                        //Posicion aleatoria de la lista
-
-                        int posAleatoria = generador.nextInt(sistema.getListadoEnPreparacion().size());
-
-                        //El pedido y el id del casillero en el que se encuentra
-                        Pedido pedido = sistema.getListadoEnPreparacion().get(posAleatoria);
-                        int idCasillero = sistema.getListadoEnPreparacion().get(posAleatoria).getCasilleroAsignado().getId();
-
-                        //Simula el experimento aleatorio de que la informacion sea correcta o no
-                        double resultado = generador.nextDouble(1.00);
-
-                        if (resultado <= probInfoCorrecta) {
-                            sistema.getListadoEnPreparacion().remove(pedido);
+                    if (resultado <= probInfoCorrecta) {
+                        synchronized (sistema.getListadoEnTransito()) {
                             sistema.getListadoEnTransito().add(pedido);
-                            sistema.getCasillero(idCasillero).liberar();
-                        } else {
-                            sistema.getListadoEnPreparacion().remove(pedido);
-                            sistema.getListadoFallidos().add(pedido);
-                            sistema.getLog().incCantPedidosFallidos();
-                            sistema.getCasillero(idCasillero).sacarDeServicio();
                         }
-                        Thread.sleep(duracion);
+                        sistema.getCasillero(idCasillero).liberar();
+                    } else {
+                        synchronized (sistema.getListadoFallidos()) {
+                            sistema.getListadoFallidos().add(pedido);
+                        }
+                        sistema.getLog().incCantPedidosFallidos();
+                        sistema.getCasillero(idCasillero).sacarDeServicio();
                     }
-
+                }
+                
+                Thread.sleep(duracion);
+                
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                break;
+            } catch (Exception e) {
+                System.err.println("Error en despachador: " + e.getMessage());
             }
         }
     }

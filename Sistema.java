@@ -1,127 +1,98 @@
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 public class Sistema {
     public static final int CANT_CASILLEROS = 200;
     private final Casillero[] matrizDeCasilleros = new Casillero[CANT_CASILLEROS];
 
-    private final List<Pedido> pedidosEnPreparacion = new ArrayList<>();
-    private final List<Pedido> pedidosEnTransito = new ArrayList<>();
-    private final List<Pedido> pedidosEntregados = new ArrayList<>();
-    private final List<Pedido> pedidosVerificados = new ArrayList<>();
-    private final List<Pedido> pedidosFallidos = new ArrayList<>();
+    private final List<Pedido> pedidosEnPreparacion = Collections.synchronizedList(new ArrayList<>());
+    private final List<Pedido> pedidosEnTransito = Collections.synchronizedList(new ArrayList<>());
+    private final List<Pedido> pedidosEntregados = Collections.synchronizedList(new ArrayList<>());
+    private final List<Pedido> pedidosVerificados = Collections.synchronizedList(new ArrayList<>());
+    private final List<Pedido> pedidosFallidos = Collections.synchronizedList(new ArrayList<>());
+    
     private final Log log;
-
-    private final Object lockPreparacion = new Object();
-    private final Object lockTransito = new Object();
-    private final Object lockEntrega = new Object();
-    private final Object lockVerificacion = new Object();
-    private final Object lockFallido = new Object();
-    private final Object lockLog = new Object();
+    private final Random random = new Random();
 
     public Sistema(Log log) {
+        this.log = log;
         for (int i = 0; i < CANT_CASILLEROS; i++) {
             matrizDeCasilleros[i] = new Casillero(i);
         }
-        this.log = log;
     }
 
     public Casillero getCasillero(int index) {
         if (index < 0 || index >= CANT_CASILLEROS) {
-            throw new IndexOutOfBoundsException("Índice de casillero inválido");
+            throw new IllegalArgumentException("Índice de casillero inválido");
         }
-            return matrizDeCasilleros[index];
+        return matrizDeCasilleros[index];
     }
 
-    /**
-     * Recorre la matriz de casilleros e incrementa la cantidad de casilleros fuera de servicio en el log
-     * se usa una vez
-     */
-    public void refreshCantCasillerosFueraDeServicio() {
+    public int getPosicionCasilleroEnPreparacionAleatorio() {
+        List<Integer> casillerosVacios = new ArrayList<>();
         for (int i = 0; i < CANT_CASILLEROS; i++) {
-            if (matrizDeCasilleros[i].getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
-                log.incCantCasillerosFueraDeServicio();
+            if(matrizDeCasilleros[i].getEstado() == EstadoCasillero.VACIO){
+                casillerosVacios.add(i);
             }
         }
+        return casillerosVacios.isEmpty() ? -1 : 
+               casillerosVacios.get(random.nextInt(casillerosVacios.size()));
     }
 
-    public List<Pedido> getPedidoListadoEnPreparacionRemovidoAleatorio() {
-        synchronized (lockPreparacion) {
-            if (pedidosEnPreparacion.isEmpty()){
-                return null;
-            }
-            int posAleatoria = new Random().nextInt(pedidosEnPreparacion.size());
-            Pedido pedido = pedidosEnPreparacion.get(posAleatoria);
-            pedidosEnPreparacion.remove(posAleatoria);
-            return pedido;
+    public Pedido getPedidoListadoEnPreparacionRemovidoAleatorio() {
+        synchronized (pedidosEnPreparacion) {
+            if (pedidosEnPreparacion.isEmpty()) return null;
+            return pedidosEnPreparacion.remove(random.nextInt(pedidosEnPreparacion.size()));
         }
     }
 
     public Pedido getPedidoDeListaEnTransitoRemovidoAleatorio() {
-        synchronized (lockTransito) {
-            if (pedidosEnTransito.isEmpty()){
-                return null;
-            }
-            int posAleatoria = new Random().nextInt(pedidosEnTransito.size());
-            Pedido pedido = pedidosEnTransito.get(posAleatoria);
-            pedidosEnTransito.remove(posAleatoria);
-            return pedido;
-        }
-    }
-    public int getPosicionCasilleroEnPreparacionAleatorio() {
-        synchronized (lockPreparacion) {
-
-            boolean hayCasillerosVacios = false;
-            //Verifica que haya algun casillero vacio
-            for (int i = 0; i < CANT_CASILLEROS; i++){
-                if(matrizDeCasilleros[i].getEstado()==EstadoCasillero.VACIO){
-                    hayCasillerosVacios = true;
-                    break;
-                }
-            }
-            // Repite hasta encontrar un casillero vacío
-            while (hayCasillerosVacios) {
-                int posAleatoria = new Random().nextInt(CANT_CASILLEROS);
-                // Verificar si el casillero está vacío
-                if (getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
-                    return posAleatoria;
-                }
-            }
-            // hayCasillerosVacios siempre va a ser false
-            int aux = hayCasillerosVacios ? 0 : -1;
-            return aux;
+        synchronized (pedidosEnTransito) {
+            if (pedidosEnTransito.isEmpty()) return null;
+            return pedidosEnTransito.remove(random.nextInt(pedidosEnTransito.size()));
         }
     }
 
+    public Pedido getPedidoDeListaEntregadosRemovidoAleatorio() {
+        synchronized (pedidosEntregados) {
+            if (pedidosEntregados.isEmpty()) return null;
+            return pedidosEntregados.remove(random.nextInt(pedidosEntregados.size()));
+        }
+    }
+
+    public List<Pedido> getListadoEnPreparacion() {
+        return new ArrayList<>(pedidosEnPreparacion);
+    }
 
     public List<Pedido> getListadoEnTransito() {
-        synchronized (lockTransito) {
-            return pedidosEntregados;
-        }
+        return new ArrayList<>(pedidosEnTransito);
     }
 
     public List<Pedido> getListadoEntregados() {
-        synchronized (lockEntrega) {
-            return pedidosEntregados;
-        }
+        return new ArrayList<>(pedidosEntregados);
     }
 
     public List<Pedido> getListadoVerificados() {
-        synchronized (lockVerificacion) {
-            return pedidosVerificados;
-        }
+        return new ArrayList<>(pedidosVerificados);
     }
 
     public List<Pedido> getListadoFallidos() {
-        synchronized (lockFallido) {
-            return pedidosFallidos;
-        }
+        return new ArrayList<>(pedidosFallidos);
     }
 
-    public Log getLog(){
-        synchronized (lockLog) {
-            return log;
+    public Log getLog() {
+        return log;
+    }
+
+    public void refreshCantCasillerosFueraDeServicio() {
+        int count = 0;
+        for (Casillero c : matrizDeCasilleros) {
+            if (c.getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                count++;
+            }
         }
+        log.setCantCasillerosFueraDeServicio(count);
     }
 }

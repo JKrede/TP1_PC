@@ -1,78 +1,44 @@
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Date;
 
 public class Log {
+    private int cantPedidosVerificados = 0;
+    private int cantPedidosFallidos = 0;
+    private int cantCasillerosFueraDeServicio = 0;
 
-    static final int INTERVALO_DE_CAPTURA = 200; // milisegundos
-    private int cantPedidosVerificados;
-    private int cantPedidosFallidos;
-    private final int cantCasilleros = Sistema.CANT_CASILLEROS;
-    private int cantCasillerosFueraDeServicio;
-    private long tiempoInicio = System.currentTimeMillis();
-
-    FileWriter archivo = null;
-    PrintWriter escritor = null;
-
-    public Log() {
-        cantPedidosVerificados = 0;
-        cantPedidosFallidos = 0;
-        cantCasillerosFueraDeServicio = 0;
-    }
-
-    public void incCantPedidosVerificados(){
+    public synchronized void incCantPedidosVerificados() {
         cantPedidosVerificados++;
+        escribirLog("Pedido verificado. Total: " + cantPedidosVerificados);
     }
 
-    public void incCantPedidosFallidos(){
+    public synchronized void incCantPedidosFallidos() {
         cantPedidosFallidos++;
+        escribirLog("Pedido fallido. Total: " + cantPedidosFallidos);
     }
 
-    public void incCantCasillerosFueraDeServicio(){
-        cantCasillerosFueraDeServicio++;
+    public synchronized void setCantCasillerosFueraDeServicio(int cantidad) {
+        cantCasillerosFueraDeServicio = cantidad;
+        escribirLog("Casilleros fuera de servicio: " + cantidad);
     }
 
-    public String getFecha() {
-        Calendar calendario = Calendar.getInstance();
-        SimpleDateFormat fecha = new SimpleDateFormat("dd/MM HH:mm:ss");
-        return fecha.format(calendario.getTime());
+    public synchronized void mostrarResumen() {
+        String resumen = "\n=== RESUMEN FINAL ===" +
+                       "\nPedidos verificados: " + cantPedidosVerificados +
+                       "\nPedidos fallidos: " + cantPedidosFallidos +
+                       "\nCasilleros fuera de servicio: " + cantCasillerosFueraDeServicio;
+        
+        System.out.println(resumen);
+        escribirLog(resumen);
     }
 
-    public String getHora() {
-        Calendar calendario = Calendar.getInstance();
-        SimpleDateFormat hora = new SimpleDateFormat("HH:mm:ss:SSS");
-        return hora.format(calendario.getTime());
-    }
-
-    public void crearArchivo() throws IOException {
-        String fecha = this.getFecha().replace("/", "-").replace(":", "_");
-        archivo = new FileWriter("Log_" + fecha + ".txt");
-        escritor = new PrintWriter(archivo);
-    }
-
-    public void escribirHistorial() {
-        if (escritor == null) {
-            throw new IllegalStateException("Archivo no inicializado");
+    private void escribirLog(String mensaje) {
+        try (FileWriter writer = new FileWriter("log_sistema.txt", true)) {
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            writer.write("[" + timestamp + "] " + mensaje + "\n");
+        } catch (IOException e) {
+            System.err.println("Error al escribir en el archivo de log: " + e.getMessage());
         }
-        escritor.println(getHora());
-        escritor.println("Pedidos fallidos: " + cantPedidosFallidos);
-        escritor.println("Pedidos verificados: " + cantPedidosVerificados);
     }
-
-    public void escribirFinalHistorial() {
-        if (escritor == null) {
-            throw new IllegalStateException("Archivo no inicializado.");
-        }
-        long tiempoFinal = System.currentTimeMillis();
-        double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
-
-        escritor.println("Casilleros disponibles: " + (cantCasilleros - cantCasillerosFueraDeServicio));
-        escritor.println("Casilleros fuera de servicio: " + cantCasillerosFueraDeServicio);
-        escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
-
-        escritor.close();
-    }
-
 }

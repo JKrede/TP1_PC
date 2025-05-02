@@ -1,37 +1,53 @@
 public class PreparadorDePedidos extends Thread {
     private final Sistema sistema;
-    private final int duracion = 100; //en milisegundos
+    private final int duracion = 100;
     private Pedido pedido;
+    private final Object lock = new Object();
 
     public PreparadorDePedidos(Sistema sistema) {
         this.sistema = sistema;
-        pedido = null;
     }
 
     public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+        synchronized (lock) {
+            this.pedido = pedido;
+            lock.notify();
+        }
     }
 
-    /**
-     * Este metodo lo que hace es elegir casilleros aleatorios hasta encontrar uno en estado vacio, y lo ocupa
-     * con el pedido establecido en su campo pedido
-     */
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                int posAleatoria = sistema.getPosicionCasilleroEnPreparacionAleatorio();
-                //-1 entonces no hay casillero vacios
-                if ( posAleatoria == -1){
-                    interrupt();
-                    break;
+                synchronized (lock) {
+                    while (pedido == null && !Thread.currentThread().isInterrupted()) {
+                        lock.wait(50);
+                    }
                 }
-                pedido.setEstado(EstadoPedido.EN_PREPARACION);
-                sistema.getCasillero(posAleatoria).ocupar(pedido);
-                sistema.getListadoEnPreparacion().add(pedido);
+
+                if (Thread.currentThread().isInterrupted()) break;
+
+                int posCasillero;
+                while ((posCasillero = sistema.getPosicionCasilleroEnPreparacionAleatorio()) == -1) {
+                    Thread.sleep(50);
+                    if (Thread.currentThread().isInterrupted()) return;
+                }
+
+                Casillero casillero = sistema.getCasillero(posCasillero);
+                synchronized (casillero) {
+                    if (casillero.getEstado() == EstadoCasillero.VACIO) {
+                        pedido.setEstado(EstadoPedido.EN_PREPARACION);
+                        casillero.ocupar(pedido);
+                        sistema.getListadoEnPreparacion().add(pedido);
+                        synchronized (lock) {
+                            pedido = null;
+                        }
+                    }
+                }
+
                 Thread.sleep(duracion);
-            }
-            catch (InterruptedException e) {
+
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }

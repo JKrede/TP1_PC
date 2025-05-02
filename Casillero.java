@@ -1,64 +1,50 @@
 public class Casillero {
-
     private final int id;
     private Pedido pedido;
     private EstadoCasillero estado;
     private int vecesOcupado;
-    private final Object lockCasillero = new Object();
+    private final Object lock = new Object();
 
     public Casillero(int id) {
         this.id = id;
-        pedido = null;
-        estado = EstadoCasillero.VACIO;
-        vecesOcupado = 0;
-    }
-    /**
-     * Verifica que el casillero este vacio y lo ocupa con el pedido pasado por argumento
-     *
-     * @Param pedido: El pedido con el cual se va a ocupar el casillero
-     * @Throws IllegalStateException: Si el casillero no se encuentra ocupado
-     */
-    public void ocupar(Pedido pedido) {
-       synchronized (lockCasillero) {
-           if (this.estado == EstadoCasillero.VACIO) {
-               this.pedido = pedido;
-               this.pedido.setCasilleroAsignado(this);
-               estado = EstadoCasillero.OCUPADO;
-               vecesOcupado++;
-           } else {
-               throw new IllegalStateException("El casillero esta ocupado");
-           }
-       }
+        this.pedido = null;
+        this.estado = EstadoCasillero.VACIO;
+        this.vecesOcupado = 0;
     }
 
-    /**
-     * Verifica que el casillero este ocupado y lo libera de su pedido asociado y pasa a estado VACIO
-     *
-     * @Throws IllegalStateException: Si el casillero no se encuentra ocupado
-     */
-    public void liberar() {
-        synchronized (lockCasillero) {
-            if (this.estado == EstadoCasillero.OCUPADO) {
-                this.pedido = null;
-                this.estado = EstadoCasillero.VACIO;
-            } else {
-                throw new IllegalStateException("El casillero esta libre");
+    public void ocupar(Pedido pedido) {
+        synchronized (lock) {
+            if (this.estado != EstadoCasillero.VACIO) {
+                throw new IllegalStateException("El casillero está ocupado");
             }
+            this.pedido = pedido;
+            pedido.setCasilleroAsignado(this);
+            this.estado = EstadoCasillero.OCUPADO;
+            this.vecesOcupado++;
         }
     }
-    /**
-     * Cambia el estado del casillero a fuera de servicio y borra el pedido asociado al mismo
-     *
-     */
+
+    public void liberar() {
+        synchronized (lock) {
+            if (this.estado != EstadoCasillero.OCUPADO) {
+                throw new IllegalStateException("El casillero está libre");
+            }
+            this.pedido = null;
+            this.estado = EstadoCasillero.VACIO;
+        }
+    }
+
     public void sacarDeServicio() {
-        synchronized (lockCasillero) {
+        synchronized (lock) {
             this.pedido = null;
             this.estado = EstadoCasillero.FUERA_DE_SERVICIO;
         }
     }
 
     public EstadoCasillero getEstado() {
-        return estado;
+        synchronized (lock) {
+            return estado;
+        }
     }
 
     public int getId() {
@@ -66,7 +52,8 @@ public class Casillero {
     }
 
     public int getVecesOcupado() {
-        return vecesOcupado;
+        synchronized (lock) {
+            return vecesOcupado;
+        }
     }
-
 }

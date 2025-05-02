@@ -1,9 +1,10 @@
 import java.util.Random;
 
 public class VerificadorDePedido implements Runnable {
-    private Sistema sistema;
-    private final int duracion = 100; //en milisegundos
-    private final double ProbDeVerificacion = 0.95;
+    private final Sistema sistema;
+    private final int duracion = 100;
+    private final double probDeVerificacion = 0.95;
+    private final Random generador = new Random();
 
     public VerificadorDePedido(Sistema sistema) {
         this.sistema = sistema;
@@ -12,27 +13,32 @@ public class VerificadorDePedido implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-                try{
-                    //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
-                    double resultado = new Random().nextDouble(1.00);
+            try {
+                Pedido pedido = sistema.getPedidoDeListaEntregadosRemovidoAleatorio();
+                
+                if (pedido != null) {
+                    double resultado = generador.nextDouble();
 
-                    //El pedido y el id del casillero en el que se encuentra
-                    Pedido pedido = sistema.getPedidoDeListaEntregadosRemovidoAleatorio();
-
-                    if (ProbDeVerificacion >= resultado) {
-                        sistema.getListadoEntregados().remove(pedido);
-                        sistema.getListadoVerificados().add(pedido);
+                    if (resultado <= probDeVerificacion) {
+                        synchronized (sistema.getListadoVerificados()) {
+                            sistema.getListadoVerificados().add(pedido);
+                        }
                         sistema.getLog().incCantPedidosVerificados();
                     } else {
-                        sistema.getListadoEntregados().remove(pedido);
-                        sistema.getListadoFallidos().add(pedido);
+                        synchronized (sistema.getListadoFallidos()) {
+                            sistema.getListadoFallidos().add(pedido);
+                        }
                         sistema.getLog().incCantPedidosFallidos();
                     }
-                    Thread.sleep(duracion);
                 }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                
+                Thread.sleep(duracion);
+                
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                System.err.println("Error en verificador: " + e.getMessage());
+            }
         }
     }
 }
