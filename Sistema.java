@@ -46,20 +46,14 @@ public class Sistema {
         }
     }
 
-    public List<Pedido> getListadoEnPreparacion() {
+    public List<Pedido> getPedidoListadoEnPreparacionRemovidoAleatorio() {
         synchronized (lockPreparacion) {
-            return pedidosEnPreparacion;
-        }
-    }
-
-    public Pedido getPedidoDeListaEntregadosRemovidoAleatorio() {
-        synchronized (lockEntrega) {
-            if (pedidosEntregados.isEmpty()){
+            if (pedidosEnPreparacion.isEmpty()){
                 return null;
             }
-            int posAleatoria = new Random().nextInt(pedidosEntregados.size());
-            Pedido pedido = pedidosEntregados.get(posAleatoria);
-            pedidosEntregados.remove(posAleatoria);
+            int posAleatoria = new Random().nextInt(pedidosEnPreparacion.size());
+            Pedido pedido = pedidosEnPreparacion.get(posAleatoria);
+            pedidosEnPreparacion.remove(posAleatoria);
             return pedido;
         }
     }
@@ -99,6 +93,7 @@ public class Sistema {
             return aux;
         }
     }
+
 
     public List<Pedido> getListadoEnTransito() {
         synchronized (lockTransito) {
