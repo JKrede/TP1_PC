@@ -45,33 +45,9 @@ public class Sistema {
             }
         }
     }
-
-    public List<Pedido> getPedidoListadoEnPreparacionRemovidoAleatorio() {
+    //Usado por los preparadores de pedidos
+    public int getPosicionCasilleroAleatorio() {
         synchronized (lockPreparacion) {
-            if (pedidosEnPreparacion.isEmpty()){
-                return null;
-            }
-            int posAleatoria = new Random().nextInt(pedidosEnPreparacion.size());
-            Pedido pedido = pedidosEnPreparacion.get(posAleatoria);
-            pedidosEnPreparacion.remove(posAleatoria);
-            return pedido;
-        }
-    }
-
-    public Pedido getPedidoDeListaEnTransitoRemovidoAleatorio() {
-        synchronized (lockTransito) {
-            if (pedidosEnTransito.isEmpty()){
-                return null;
-            }
-            int posAleatoria = new Random().nextInt(pedidosEnTransito.size());
-            Pedido pedido = pedidosEnTransito.get(posAleatoria);
-            pedidosEnTransito.remove(posAleatoria);
-            return pedido;
-        }
-    }
-    public int getPosicionCasilleroEnPreparacionAleatorio() {
-        synchronized (lockPreparacion) {
-
             boolean hayCasillerosVacios = false;
             //Verifica que haya algun casillero vacio
             for (int i = 0; i < CANT_CASILLEROS; i++){
@@ -93,7 +69,48 @@ public class Sistema {
             return aux;
         }
     }
+    //Usado por los despachadores de pedidos
+    public Pedido getPedidoDeListaEnPreparacionAleatorio() {
+        synchronized (lockPreparacion) {
+            if (pedidosEnPreparacion.isEmpty()){
+                return null;
+            }
+            int posAleatoria = new Random().nextInt(pedidosEnPreparacion.size());
+            Pedido pedido = pedidosEnPreparacion.get(posAleatoria);
+            pedidosEnPreparacion.remove(posAleatoria);
+            return pedido;
+        }
+    }
+    //Usado por los entregadores de pedidos
+    public Pedido getPedidoDeListaEnTransitoAleatorio() {
+        synchronized (lockTransito) {
+            if (pedidosEnTransito.isEmpty()){
+                return null;
+            }
+            int posAleatoria = new Random().nextInt(pedidosEnTransito.size());
+            Pedido pedido = pedidosEnTransito.get(posAleatoria);
+            pedidosEnTransito.remove(posAleatoria);
+            return pedido;
+        }
+    }
+    //Usado por los verificadores de pedidos
+    public Pedido getPedidoDeListaEntregadosAleatorio() {
+        synchronized (lockEntrega) {
+            if (pedidosEntregados.isEmpty()){
+                return null;
+            }
+            int posAleatoria = new Random().nextInt(pedidosEntregados.size());
+            Pedido pedido = pedidosEntregados.get(posAleatoria);
+            pedidosEntregados.remove(posAleatoria);
+            return pedido;
+        }
+    }
 
+    public List<Pedido> getListadoEnPreparacion() {
+        synchronized (lockPreparacion) {
+            return pedidosEnPreparacion;
+        }
+    }
 
     public List<Pedido> getListadoEnTransito() {
         synchronized (lockTransito) {

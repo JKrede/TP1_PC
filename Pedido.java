@@ -19,7 +19,6 @@ public class Pedido {
         this.casilleroAsignado = casilleroAsignado;
     }
 
-
     public EstadoPedido getEstado(){
         return estado;
     }

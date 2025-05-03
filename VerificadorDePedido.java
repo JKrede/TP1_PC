@@ -13,11 +13,11 @@ public class VerificadorDePedido implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
                 try{
+                    //El pedido y el id del casillero en el que se encuentra
+                    Pedido pedido = sistema.getPedidoDeListaEntregadosAleatorio();
+                    if (pedido == null) {break;}
                     //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
                     double resultado = new Random().nextDouble(1.00);
-
-                    //El pedido y el id del casillero en el que se encuentra
-                    Pedido pedido = sistema.getPedidoDeListaEntregadosRemovidoAleatorio();
 
                     if (ProbDeVerificacion >= resultado) {
                         sistema.getListadoEntregados().remove(pedido);

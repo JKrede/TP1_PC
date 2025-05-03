@@ -13,33 +13,28 @@ public class DespachadorDePedidos implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                //El pedido y el id del casillero en el que se encuentra
+                Pedido pedido = sistema.getPedidoDeListaEnPreparacionAleatorio();
+                if (pedido == null) {
+                    break;
+                }
 
-                    if (!sistema.getListadoEnPreparacion().isEmpty()) {
-                        Random generador = new Random();
-                        //Posicion aleatoria de la lista
+                int idCasillero = pedido.getCasilleroAsignado().getId();
 
-                        int posAleatoria = generador.nextInt(sistema.getListadoEnPreparacion().size());
+                //Simula el experimento aleatorio de que la informacion sea correcta o no
+                double resultado = new Random().nextDouble(1.00);
 
-                        //El pedido y el id del casillero en el que se encuentra
-                        Pedido pedido = sistema.getListadoEnPreparacion().get(posAleatoria);
-                        int idCasillero = sistema.getListadoEnPreparacion().get(posAleatoria).getCasilleroAsignado().getId();
-
-                        //Simula el experimento aleatorio de que la informacion sea correcta o no
-                        double resultado = generador.nextDouble(1.00);
-
-                        if (resultado <= probInfoCorrecta) {
-                            sistema.getListadoEnPreparacion().remove(pedido);
-                            sistema.getListadoEnTransito().add(pedido);
-                            sistema.getCasillero(idCasillero).liberar();
-                        } else {
-                            sistema.getListadoEnPreparacion().remove(pedido);
-                            sistema.getListadoFallidos().add(pedido);
-                            sistema.getLog().incCantPedidosFallidos();
-                            sistema.getCasillero(idCasillero).sacarDeServicio();
-                        }
-                        Thread.sleep(duracion);
-                    }
-
+                if (resultado <= probInfoCorrecta) {
+                    sistema.getListadoEnPreparacion().remove(pedido);
+                    sistema.getListadoEnTransito().add(pedido);
+                    sistema.getCasillero(idCasillero).liberar();
+                } else {
+                    sistema.getListadoEnPreparacion().remove(pedido);
+                    sistema.getListadoFallidos().add(pedido);
+                    sistema.getLog().incCantPedidosFallidos();
+                    sistema.getCasillero(idCasillero).sacarDeServicio();
+                }
+                Thread.sleep(duracion);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;

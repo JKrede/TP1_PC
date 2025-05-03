@@ -53,12 +53,13 @@ public class Log {
     }
 
     public void escribirHistorial() {
-        if (escritor == null) {
-            throw new IllegalStateException("Archivo no inicializado");
-        }
-        escritor.println(getHora());
-        escritor.println("Pedidos fallidos: " + cantPedidosFallidos);
-        escritor.println("Pedidos verificados: " + cantPedidosVerificados);
+
+            if (escritor == null) {
+                throw new IllegalStateException("Archivo no inicializado");
+            }
+            escritor.println(getHora());
+            escritor.println("Pedidos fallidos: " + cantPedidosFallidos);
+            escritor.println("Pedidos verificados: " + cantPedidosVerificados);
     }
 
     public void escribirFinalHistorial() {

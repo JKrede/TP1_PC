@@ -24,17 +24,28 @@ public class Main {
         Thread verificadorDePedidos1 = new Thread(new VerificadorDePedido(sistema)); //Hilo 9
         Thread verificadorDePedidos2 = new Thread(new VerificadorDePedido(sistema)); //Hilo 10
 
+        try{
+            sistema.getLog().crearArchivo();
+        }catch (Exception e){
+            System.out.println("No se pudo crear el archivo");
+        }
 
         // Crea 500 pedidos
-        for (int i = 0; i < 100; i++) {
-            Pedido pedido = new Pedido();
-            listaPedidos.add(pedido);
-        }
-        for(int i = 0; i < 96; i++){
-            preparadorDePedidos1.setPedido(listaPedidos.get(i));
-            preparadorDePedidos2.setPedido(listaPedidos.get(i+1));
-            preparadorDePedidos3.setPedido(listaPedidos.get(i+2));
-        }
+        //for (int i = 0; i < 100; i++) {
+            Pedido pedido1 = new Pedido();
+            listaPedidos.add(pedido1);
+
+        Pedido pedido2 = new Pedido();
+        listaPedidos.add(pedido2);
+
+        Pedido pedido3 = new Pedido();
+        listaPedidos.add(pedido3);
+        //}
+        //for(int i = 0; i < 96; i++) {
+            preparadorDePedidos1.setPedido(listaPedidos.get(0));
+            preparadorDePedidos2.setPedido(listaPedidos.get(1));
+            preparadorDePedidos3.setPedido(listaPedidos.get(2));
+        //}
         preparadorDePedidos1.start();
         preparadorDePedidos2.start();
         preparadorDePedidos3.start();
@@ -48,6 +59,23 @@ public class Main {
 
         verificadorDePedidos1.start();
         verificadorDePedidos2.start();
+        int c=0;
+
+        while (true) { // Bucle infinito (o hasta una condición)
+            try {
+                sistema.getLog().escribirHistorial(); // Llama a tu método
+                Thread.sleep(200); // Espera 200 ms
+                c++;
+                if(c==10){
+                    break;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                break; // Termina si hay interrupción
+            }
+        }
+
+        sistema.getLog().escribirFinalHistorial();
 
     }
 }

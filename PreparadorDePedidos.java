@@ -9,7 +9,11 @@ public class PreparadorDePedidos extends Thread {
     }
 
     public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+            if(pedido.getCasilleroAsignado()==null){
+                this.pedido = pedido;
+            }else{
+                this.pedido=null;
+            }
     }
 
     /**
@@ -20,9 +24,9 @@ public class PreparadorDePedidos extends Thread {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                int posAleatoria = sistema.getPosicionCasilleroEnPreparacionAleatorio();
+                int posAleatoria = sistema.getPosicionCasilleroAleatorio();
                 //-1 entonces no hay casillero vacios
-                if ( posAleatoria == -1){
+                if ( posAleatoria == -1 || pedido == null){
                     interrupt();
                     break;
                 }

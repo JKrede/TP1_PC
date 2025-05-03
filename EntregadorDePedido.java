@@ -13,7 +13,8 @@ public class EntregadorDePedido implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                Pedido pedido = sistema.getPedidoDeListaEnTransitoRemovidoAleatorio();
+                Pedido pedido = sistema.getPedidoDeListaEnTransitoAleatorio();
+                if (pedido == null) {break;}
                 //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
                 double resultado = new Random().nextDouble(1.00);
 

@@ -58,7 +58,7 @@ public class Casillero {
     }
 
     public EstadoCasillero getEstado() {
-        return estado;
+        synchronized (lockCasillero) {return estado;}
     }
 
     public int getId() {
