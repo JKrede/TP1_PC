@@ -27,11 +27,13 @@ public class DespachadorDePedidos implements Runnable {
                 if (resultado <= probInfoCorrecta) {
                     sistema.getListadoEnPreparacion().remove(pedido);
                     sistema.getListadoEnTransito().add(pedido);
+                    pedido.setEstado(EstadoPedido.EN_TRANSITO);
                     sistema.getCasillero(idCasillero).liberar();
                 } else {
                     sistema.getListadoEnPreparacion().remove(pedido);
                     sistema.getListadoFallidos().add(pedido);
                     sistema.getLog().incCantPedidosFallidos();
+                    pedido.setEstado(EstadoPedido.FALLIDO);
                     sistema.getCasillero(idCasillero).sacarDeServicio();
                 }
                 Thread.sleep(duracion);

@@ -20,10 +20,12 @@ public class EntregadorDePedido implements Runnable {
 
                 if (ProbDeConfrmacion >= resultado) {
                     sistema.getListadoEnTransito().remove(pedido);
+                    pedido.setEstado(EstadoPedido.ENTREGADO);
                     sistema.getListadoEntregados().add(pedido);
                 } else {
                     sistema.getListadoEnTransito().remove(pedido);
                     sistema.getListadoFallidos().add(pedido);
+                    pedido.setEstado(EstadoPedido.FALLIDO);
                     sistema.getLog().incCantPedidosFallidos();
                 }
                 Thread.sleep(duracion);

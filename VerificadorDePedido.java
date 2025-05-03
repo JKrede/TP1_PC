@@ -22,10 +22,12 @@ public class VerificadorDePedido implements Runnable {
                     if (ProbDeVerificacion >= resultado) {
                         sistema.getListadoEntregados().remove(pedido);
                         sistema.getListadoVerificados().add(pedido);
+                        pedido.setEstado(EstadoPedido.VERIFICADO);
                         sistema.getLog().incCantPedidosVerificados();
                     } else {
                         sistema.getListadoEntregados().remove(pedido);
                         sistema.getListadoFallidos().add(pedido);
+                        pedido.setEstado(EstadoPedido.FALLIDO);
                         sistema.getLog().incCantPedidosFallidos();
                     }
                     Thread.sleep(duracion);

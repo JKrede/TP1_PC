@@ -114,7 +114,7 @@ public class Sistema {
 
     public List<Pedido> getListadoEnTransito() {
         synchronized (lockTransito) {
-            return pedidosEntregados;
+            return pedidosEnTransito;
         }
     }
 

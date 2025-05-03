@@ -2,6 +2,7 @@ public class PreparadorDePedidos extends Thread {
     private final Sistema sistema;
     private final int duracion = 100; //en milisegundos
     private Pedido pedido;
+    private final Object lockSelectPedido = new Object();
 
     public PreparadorDePedidos(Sistema sistema) {
         this.sistema = sistema;
@@ -9,11 +10,13 @@ public class PreparadorDePedidos extends Thread {
     }
 
     public void setPedido(Pedido pedido) {
+        synchronized (lockSelectPedido) {
             if(pedido.getCasilleroAsignado()==null){
                 this.pedido = pedido;
             }else{
                 this.pedido=null;
             }
+        }
     }
 
     /**
@@ -27,12 +30,12 @@ public class PreparadorDePedidos extends Thread {
                 int posAleatoria = sistema.getPosicionCasilleroAleatorio();
                 //-1 entonces no hay casillero vacios
                 if ( posAleatoria == -1 || pedido == null){
-                    interrupt();
                     break;
                 }
                 pedido.setEstado(EstadoPedido.EN_PREPARACION);
                 sistema.getCasillero(posAleatoria).ocupar(pedido);
                 sistema.getListadoEnPreparacion().add(pedido);
+                pedido = null;
                 Thread.sleep(duracion);
             }
             catch (InterruptedException e) {
