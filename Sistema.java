@@ -63,23 +63,23 @@ public class Sistema {
     }
 
     public List<Pedido> getListadoEnPreparacion() {
-        return new ArrayList<>(pedidosEnPreparacion);
+        return pedidosEnPreparacion;
     }
 
     public List<Pedido> getListadoEnTransito() {
-        return new ArrayList<>(pedidosEnTransito);
+        return pedidosEnTransito;
     }
 
     public List<Pedido> getListadoEntregados() {
-        return new ArrayList<>(pedidosEntregados);
+        return pedidosEntregados;
     }
 
     public List<Pedido> getListadoVerificados() {
-        return new ArrayList<>(pedidosVerificados);
+        return pedidosVerificados;
     }
 
     public List<Pedido> getListadoFallidos() {
-        return new ArrayList<>(pedidosFallidos);
+        return pedidosFallidos;
     }
 
     public Log getLog() {

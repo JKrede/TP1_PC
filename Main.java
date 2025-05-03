@@ -26,26 +26,11 @@ public class Main {
         Thread verificadorDePedidos1 = new Thread(new VerificadorDePedido(sistema)); //Hilo 9
         Thread verificadorDePedidos2 = new Thread(new VerificadorDePedido(sistema)); //Hilo 10
 
+
         // Creación de pedidos (original)
         for (int i = 0; i < 100; i++) {
             listaPedidos.add(new Pedido());
         }
-
-        // Distribución de pedidos (original con pequeña mejora en el sleep)
-        for(int i = 0; i < 96; i++){
-            preparadorDePedidos1.setPedido(listaPedidos.get(i));
-            preparadorDePedidos2.setPedido(listaPedidos.get(i+1));
-            preparadorDePedidos3.setPedido(listaPedidos.get(i+2));
-            
-            try {
-                TimeUnit.MILLISECONDS.sleep(50); // Mejorado usando TimeUnit
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-        }
-
-        // Inicio de hilos (original)
         preparadorDePedidos1.start();
         preparadorDePedidos2.start();
         preparadorDePedidos3.start();
@@ -60,25 +45,46 @@ public class Main {
         verificadorDePedidos1.start();
         verificadorDePedidos2.start();
 
+        // Distribución de pedidos (original con pequeña mejora en el sleep)
+        for(int i = 0; i < 96; i++) {
+            preparadorDePedidos1.setPedido(listaPedidos.get(i));
+            preparadorDePedidos2.setPedido(listaPedidos.get(i + 1));
+            preparadorDePedidos3.setPedido(listaPedidos.get(i + 2));
+        }
+            /*
+            try {
+                TimeUnit.MILLISECONDS.sleep(50); // Mejorado usando TimeUnit
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+             */
+        // Inicio de hilos (original)
+
+        log.mostrarResumen();
+        /*
         // Manejo de finalización (original con mejora para mostrar resumen)
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Interrumpir todos los hilos
             preparadorDePedidos1.interrupt();
             preparadorDePedidos2.interrupt();
             preparadorDePedidos3.interrupt();
-            
+
             despachadorDePedidos1.interrupt();
             despachadorDePedidos2.interrupt();
-            
+
             entregadorDePedidos1.interrupt();
             entregadorDePedidos2.interrupt();
             entregadorDePedidos3.interrupt();
-            
+
             verificadorDePedidos1.interrupt();
             verificadorDePedidos2.interrupt();
-            
+
             // Mostrar resumen al finalizar
             log.mostrarResumen(); // Cambio mínimo aquí para que funcione
         }));
+
+         */
     }
 }
