@@ -2,8 +2,10 @@ import java.util.Random;
 
 public class EntregadorDePedido implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 1; //en milisegundos
-    private final double ProbDeConfrmacion = 0.90;
+    private final int duracion = 50; //en milisegundos
+    private int intentos =0;
+    private final int intentosMaximos = 100;
+    private final double probDeConfrmacion = 0.90;
 
     public EntregadorDePedido(Sistema sistema) {
         this.sistema = sistema;
@@ -14,21 +16,28 @@ public class EntregadorDePedido implements Runnable {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Pedido pedido = sistema.getPedidoDeListaEnTransitoAleatorio();
-                if (pedido == null) {break;}
-                //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
-                double resultado = new Random().nextDouble(1.00);
+                if (pedido != null) {
+                    //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
+                    double resultado = new Random().nextDouble();
 
-                if (ProbDeConfrmacion >= resultado) {
-                    sistema.removePedidoEnTransito(pedido);
-                    sistema.addPedidoEnEntregados(pedido);
-                    pedido.setEstado(EstadoPedido.ENTREGADO);
-                } else {
-                    sistema.removePedidoEnTransito(pedido);
-                    sistema.addPedidoEnFallidos(pedido);
-                    sistema.getLog().incCantPedidosFallidos();
-                    pedido.setEstado(EstadoPedido.FALLIDO);
+                    if (resultado <= probDeConfrmacion) {
+                        sistema.removePedidoEnTransito(pedido);
+                        sistema.addPedidoEnEntregados(pedido);
+                        pedido.setEstado(EstadoPedido.ENTREGADO);
+                    } else {
+                        sistema.removePedidoEnTransito(pedido);
+                        sistema.addPedidoEnFallidos(pedido);
+                        pedido.setEstado(EstadoPedido.FALLIDO);
+                    }
+                    Thread.sleep(duracion);
+                }else{
+                    if(intentos<intentosMaximos){
+                        Thread.sleep(100);
+                        intentos++;
+                    }else{
+                        break;
+                    }
                 }
-                Thread.sleep(duracion);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

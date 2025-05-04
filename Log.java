@@ -4,46 +4,18 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class Log {
+public class Log implements Runnable {
 
     static final int INTERVALO_DE_CAPTURA = 200; // milisegundos
-    private int cantPedidosVerificados;
-    private int cantPedidosFallidos;
-    private final int cantCasilleros = Sistema.CANT_CASILLEROS;
-    private int cantCasillerosFueraDeServicio;
+    private Sistema sistema;
     private long tiempoInicio = System.currentTimeMillis();
-
-    private final Object lockVerificado = new Object();
-
-    private final Object lockFallido = new Object();
-
-    private final Object lockFueraDeServicio = new Object();
-
+    int contadorLog = 0;
+    boolean archivoCreado = false;
     FileWriter archivo = null;
     PrintWriter escritor = null;
 
-    public Log() {
-        cantPedidosVerificados = 0;
-        cantPedidosFallidos = 0;
-        cantCasillerosFueraDeServicio = 0;
-    }
-
-    public void incCantPedidosVerificados(){
-        synchronized (lockVerificado){
-            cantPedidosVerificados++;
-        }
-    }
-
-    public void incCantPedidosFallidos(){
-        synchronized (lockFallido){
-            cantPedidosFallidos++;
-        }
-    }
-
-    public void incCantCasillerosFueraDeServicio(){
-        synchronized (lockFueraDeServicio){
-            cantCasillerosFueraDeServicio++;
-        }
+    public Log(Sistema sistema) {
+        this.sistema = sistema;
     }
 
     public String getFecha() {
@@ -58,20 +30,24 @@ public class Log {
         return hora.format(calendario.getTime());
     }
 
-    public void crearArchivo() throws IOException {
-        String fecha = this.getFecha().replace("/", "-").replace(":", "_");
-        archivo = new FileWriter("Log_" + fecha + ".txt");
-        escritor = new PrintWriter(archivo);
+    public void crearArchivo()  {
+        try{
+                String fecha = this.getFecha().replace("/", "-").replace(":", "_");
+                archivo = new FileWriter("Log_" + fecha + ".txt");
+                escritor = new PrintWriter(archivo, true);
+        } catch (IOException e) {
+                System.out.println("algo salio mal: "+e.getMessage());
+        }
     }
 
     public void escribirHistorial() {
-
-            if (escritor == null) {
-                throw new IllegalStateException("Archivo no inicializado");
-            }
-            escritor.println(getHora());
-            escritor.println("Pedidos fallidos: " + cantPedidosFallidos);
-            escritor.println("Pedidos verificados: " + cantPedidosVerificados);
+        if (escritor == null) {
+            throw new IllegalStateException("Archivo no inicializado");
+        }
+        escritor.println(getHora());
+        escritor.println("Pedidos verificados: " + sistema.getPedidosVerificados().size());
+        escritor.println("Pedidos fallidos: " + sistema.getPedidosFallidos().size());
+        escritor.flush();
     }
 
     public void escribirFinalHistorial() {
@@ -81,11 +57,41 @@ public class Log {
         long tiempoFinal = System.currentTimeMillis();
         double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
 
-        escritor.println("Casilleros disponibles: " + (cantCasilleros - cantCasillerosFueraDeServicio));
-        escritor.println("Casilleros fuera de servicio: " + cantCasillerosFueraDeServicio);
+        escritor.println(" ");
+        escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
+        escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
         escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
 
-        escritor.close();
+        try {
+            escritor.close();
+            if (archivo != null) {
+                archivo.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Error al cerrar el archivo de log: " + e.getMessage());
+        }
     }
 
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                if(!archivoCreado){
+                    crearArchivo();
+                    archivoCreado = true;
+                }
+                if(contadorLog < 75){
+                    escribirHistorial();
+                    contadorLog++;
+                    Thread.sleep(INTERVALO_DE_CAPTURA);
+                }
+                else{
+                    escribirFinalHistorial();
+                    break;
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
 }

@@ -3,21 +3,20 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args){
+
         List<Pedido> listaPedidos = new ArrayList<>();
-        int contadorLog = 0;
-        Log log = new Log();
-
-        Sistema sistema = new Sistema(log);
-
-        for (int i = 0; i < 500; i++) {
-            Pedido pedido = new Pedido(i);
-            listaPedidos.add(pedido);
-        }
+        Sistema sistema = new Sistema();
+        Log log = new Log(sistema);
 
         PreparadorDePedidos procesodePrepararDePedidos = new PreparadorDePedidos(sistema, listaPedidos);
         DespachadorDePedidos despachadorDePedidos = new DespachadorDePedidos(sistema);
         EntregadorDePedido entregadorDePedidos = new EntregadorDePedido(sistema);
         VerificadorDePedido verificadorDePedidos = new VerificadorDePedido(sistema);
+
+        for (int i = 0; i < 100; i++) {
+            Pedido pedido = new Pedido(i);
+            listaPedidos.add(pedido);
+        }
 
         Thread preparadorDePedidos1 = new Thread(procesodePrepararDePedidos);
         Thread preparadorDePedidos2 = new Thread(procesodePrepararDePedidos);
@@ -33,12 +32,9 @@ public class Main {
         Thread verificadorDePedidos1 = new Thread(verificadorDePedidos); //Hilo 9
         Thread verificadorDePedidos2 = new Thread(verificadorDePedidos); //Hilo 10
 
-        try{
-            sistema.getLog().crearArchivo();
-        }catch (Exception e) {
-            System.out.println("No se pudo crear el archivo");
-        }
+        Thread historial = new Thread(log);
 
+        historial.start();
         preparadorDePedidos1.start();
         preparadorDePedidos2.start();
         preparadorDePedidos3.start();
@@ -52,24 +48,6 @@ public class Main {
 
         verificadorDePedidos1.start();
         verificadorDePedidos2.start();
-
-        while (true) { // Bucle infinito (o hasta una condición)
-            try {
-                sistema.getLog().escribirHistorial(); // Llama a tu método
-                Thread.sleep(200); // Espera 200 ms
-                contadorLog++;
-                if(contadorLog ==50){
-                    break;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                break; // Termina si hay interrupción
-            }
-        }
-        //hace un recuento de la cantidad de casilleros fuera de servicio
-        sistema.refreshCantCasillerosFueraDeServicio();
-        //Imprime la estadistica final de los casilleros
-        sistema.getLog().escribirFinalHistorial();
 
     }
 }

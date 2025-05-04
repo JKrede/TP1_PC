@@ -2,26 +2,25 @@ import java.util.List;
 
 public class PreparadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 1; //en milisegundos
+    private final int duracion = 50; //en milisegundos
     private Pedido pedido;
-    private final List<Pedido> listaPedidos;
+    private final List<Pedido> listaPedidosPendientes;
+    private boolean hayPedidos = true;
     private final Object lockSelectPedido = new Object();
 
-    public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidos) {
+    public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidosPendientes) {
         this.sistema = sistema;
-        this.listaPedidos = listaPedidos;
+        this.listaPedidosPendientes = listaPedidosPendientes;
         pedido = null;
     }
 
     public void setPedido() {
         synchronized (lockSelectPedido) {
-            for(int i=0;i<listaPedidos.size();i++){
-                if(listaPedidos.get(i).getCasilleroAsignado()==null){
-                    this.pedido = listaPedidos.get(i);
-                    break;
-                }else{
-                    this.pedido=null;
-                }
+            if(!listaPedidosPendientes.isEmpty()){
+                    this.pedido = listaPedidosPendientes.getLast();
+                    listaPedidosPendientes.removeLast();
+            }else{
+                hayPedidos = false;
             }
         }
     }
@@ -32,7 +31,7 @@ public class PreparadorDePedidos implements Runnable {
      */
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted() && hayPedidos) {
             try {
                 setPedido();
                 Casillero casilleroAleatorio = sistema.getCasilleroAleatorio();

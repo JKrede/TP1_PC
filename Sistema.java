@@ -11,7 +11,6 @@ public class Sistema {
     private final List<Pedido> pedidosEntregados = new ArrayList<>();
     private final List<Pedido> pedidosVerificados = new ArrayList<>();
     private final List<Pedido> pedidosFallidos = new ArrayList<>();
-    private final Log log;
 
     private final Object lockMatrizCasillero = new Object();
     private final Object lockPreparacion = new Object();
@@ -20,11 +19,10 @@ public class Sistema {
     private final Object lockVerificacion = new Object();
     private final Object lockFallido = new Object();
 
-    public Sistema(Log log) {
+    public Sistema() {
         for (int i = 0; i < CANT_CASILLEROS; i++) {
             matrizDeCasilleros[i] = new Casillero(i);
         }
-        this.log = log;
     }
 
     public Casillero getCasillero(int index) {
@@ -34,17 +32,6 @@ public class Sistema {
             return matrizDeCasilleros[index];
     }
 
-    /**
-     * Recorre la matriz de casilleros e incrementa la cantidad de casilleros fuera de servicio en el log
-     * se usa una vez
-     */
-    public void refreshCantCasillerosFueraDeServicio() {
-        for (int i = 0; i < CANT_CASILLEROS; i++) {
-            if (matrizDeCasilleros[i].getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
-                log.incCantCasillerosFueraDeServicio();
-            }
-        }
-    }
     //Usado por los preparadores de pedidos
     public Casillero getCasilleroAleatorio() {
         synchronized (lockMatrizCasillero) {
@@ -103,11 +90,23 @@ public class Sistema {
             return pedido;
         }
     }
-
-    public Log getLog(){
-            return log;
+        /// a usar el log
+    public List<Pedido> getPedidosVerificados() {
+        return pedidosVerificados;
     }
-
+    public List<Pedido> getPedidosFallidos() {
+        return pedidosFallidos;
+    }
+    public int getCantCasillerosFueraDeServicio() {
+        int contadorCasilleros=0;
+        for(int i=0;i<CANT_CASILLEROS;i++){
+            if(matrizDeCasilleros[i].getEstado()==EstadoCasillero.FUERA_DE_SERVICIO){
+                contadorCasilleros++;
+            }
+        }
+        return contadorCasilleros;
+    }
+        /// //////////////////////////////////
     public void addPedidoEnPreparacion(Pedido pedido) {
         synchronized (lockPreparacion) {
             pedidosEnPreparacion.add(pedido);
