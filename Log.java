@@ -13,6 +13,12 @@ public class Log {
     private int cantCasillerosFueraDeServicio;
     private long tiempoInicio = System.currentTimeMillis();
 
+    private final Object lockVerificado = new Object();
+
+    private final Object lockFallido = new Object();
+
+    private final Object lockFueraDeServicio = new Object();
+
     FileWriter archivo = null;
     PrintWriter escritor = null;
 
@@ -23,15 +29,21 @@ public class Log {
     }
 
     public void incCantPedidosVerificados(){
-        cantPedidosVerificados++;
+        synchronized (lockVerificado){
+            cantPedidosVerificados++;
+        }
     }
 
     public void incCantPedidosFallidos(){
-        cantPedidosFallidos++;
+        synchronized (lockFallido){
+            cantPedidosFallidos++;
+        }
     }
 
     public void incCantCasillerosFueraDeServicio(){
-        cantCasillerosFueraDeServicio++;
+        synchronized (lockFueraDeServicio){
+            cantCasillerosFueraDeServicio++;
+        }
     }
 
     public String getFecha() {

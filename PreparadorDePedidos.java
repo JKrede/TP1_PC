@@ -1,16 +1,16 @@
 import java.util.List;
 
-public class PreparadorDePedidos extends Thread {
+public class PreparadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 100; //en milisegundos
+    private final int duracion = 1; //en milisegundos
     private Pedido pedido;
-    private final Object lockSelectPedido = new Object();
     private final List<Pedido> listaPedidos;
+    private final Object lockSelectPedido = new Object();
 
     public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidos) {
         this.sistema = sistema;
-        pedido = null;
         this.listaPedidos = listaPedidos;
+        pedido = null;
     }
 
     public void setPedido() {
@@ -34,15 +34,17 @@ public class PreparadorDePedidos extends Thread {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                int posAleatoria = sistema.getPosicionCasilleroAleatorio();
+                setPedido();
+                Casillero casilleroAleatorio = sistema.getCasilleroAleatorio();
                 //-1 entonces no hay casillero vacios
-                if ( posAleatoria != -1 && pedido != null){
+                if ( casilleroAleatorio == null || pedido == null){
+                    break;
+                }
                 pedido.setEstado(EstadoPedido.EN_PREPARACION);
-                sistema.getCasillero(posAleatoria).ocupar(pedido);
-                sistema.getListadoEnPreparacion().add(pedido);
+                casilleroAleatorio.ocupar(pedido);
+                sistema.addPedidoEnPreparacion(pedido);
                 pedido = null;
                 Thread.sleep(duracion);
-                }
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class VerificadorDePedido implements Runnable {
     private Sistema sistema;
-    private final int duracion = 100; //en milisegundos
+    private final int duracion = 1; //en milisegundos
     private final double ProbDeVerificacion = 0.95;
 
     public VerificadorDePedido(Sistema sistema) {
@@ -20,13 +20,13 @@ public class VerificadorDePedido implements Runnable {
                     double resultado = new Random().nextDouble(1.00);
 
                     if (ProbDeVerificacion >= resultado) {
-                        sistema.getListadoEntregados().remove(pedido);
-                        sistema.getListadoVerificados().add(pedido);
+                        sistema.removePedidoEnEntregados(pedido);
+                        sistema.addPedidoEnVerificados(pedido);
                         pedido.setEstado(EstadoPedido.VERIFICADO);
                         sistema.getLog().incCantPedidosVerificados();
                     } else {
-                        sistema.getListadoEntregados().remove(pedido);
-                        sistema.getListadoFallidos().add(pedido);
+                        sistema.removePedidoEnEntregados(pedido);
+                        sistema.addPedidoEnFallidos(pedido);
                         pedido.setEstado(EstadoPedido.FALLIDO);
                         sistema.getLog().incCantPedidosFallidos();
                     }

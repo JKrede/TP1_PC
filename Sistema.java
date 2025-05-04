@@ -13,12 +13,12 @@ public class Sistema {
     private final List<Pedido> pedidosFallidos = new ArrayList<>();
     private final Log log;
 
+    private final Object lockMatrizCasillero = new Object();
     private final Object lockPreparacion = new Object();
     private final Object lockTransito = new Object();
     private final Object lockEntrega = new Object();
     private final Object lockVerificacion = new Object();
     private final Object lockFallido = new Object();
-    private final Object lockLog = new Object();
 
     public Sistema(Log log) {
         for (int i = 0; i < CANT_CASILLEROS; i++) {
@@ -46,8 +46,8 @@ public class Sistema {
         }
     }
     //Usado por los preparadores de pedidos
-    public int getPosicionCasilleroAleatorio() {
-        synchronized (lockPreparacion) {
+    public Casillero getCasilleroAleatorio() {
+        synchronized (lockMatrizCasillero) {
             boolean hayCasillerosVacios = false;
             //Verifica que haya algun casillero vacio
             for (int i = 0; i < CANT_CASILLEROS; i++){
@@ -61,12 +61,10 @@ public class Sistema {
                 int posAleatoria = new Random().nextInt(CANT_CASILLEROS);
                 // Verificar si el casillero está vacío
                 if (getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
-                    return posAleatoria;
+                    return getCasillero(posAleatoria);
                 }
             }
-            // hayCasillerosVacios siempre va a ser false
-            int aux = hayCasillerosVacios ? 0 : -1;
-            return aux;
+            return null;
         }
     }
     //Usado por los despachadores de pedidos
@@ -106,39 +104,50 @@ public class Sistema {
         }
     }
 
-    public List<Pedido> getListadoEnPreparacion() {
-        synchronized (lockPreparacion) {
-            return pedidosEnPreparacion;
-        }
-    }
-
-    public List<Pedido> getListadoEnTransito() {
-        synchronized (lockTransito) {
-            return pedidosEnTransito;
-        }
-    }
-
-    public List<Pedido> getListadoEntregados() {
-        synchronized (lockEntrega) {
-            return pedidosEntregados;
-        }
-    }
-
-    public List<Pedido> getListadoVerificados() {
-        synchronized (lockVerificacion) {
-            return pedidosVerificados;
-        }
-    }
-
-    public List<Pedido> getListadoFallidos() {
-        synchronized (lockFallido) {
-            return pedidosFallidos;
-        }
-    }
-
     public Log getLog(){
-        synchronized (lockLog) {
             return log;
+    }
+
+    public void addPedidoEnPreparacion(Pedido pedido) {
+        synchronized (lockPreparacion) {
+            pedidosEnPreparacion.add(pedido);
         }
     }
+    public void addPedidoEnTransito(Pedido pedido) {
+        synchronized (lockTransito) {
+            pedidosEnTransito.add(pedido);
+        }
+    }
+    public void addPedidoEnEntregados(Pedido pedido) {
+        synchronized (lockEntrega) {
+            pedidosEntregados.add(pedido);
+        }
+    }
+    public void addPedidoEnVerificados(Pedido pedido) {
+        synchronized (lockVerificacion) {
+            pedidosVerificados.add(pedido);
+        }
+    }
+    public void addPedidoEnFallidos(Pedido pedido) {
+        synchronized (lockFallido) {
+            pedidosFallidos.add(pedido);
+        }
+    }
+    public void removePedidoEnPreparacion(Pedido pedido) {
+        synchronized (lockPreparacion) {
+            pedidosEnPreparacion.remove(pedido);
+        }
+    }
+    public void removePedidoEnTransito(Pedido pedido) {
+        synchronized (lockTransito) {
+            pedidosEnTransito.remove(pedido);
+        }
+    }
+    public void removePedidoEnEntregados(Pedido pedido) {
+        synchronized (lockEntrega) {
+            pedidosEntregados.remove(pedido);
+        }
+    }
+
+
 }

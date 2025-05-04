@@ -1,18 +1,21 @@
 
 public class Pedido {
-    private static int CONTADOR=0;
+
     private final int id;
     private EstadoPedido estado;
     private Casillero casilleroAsignado;
+    private final Object lockPedido = new Object();
 
-    public Pedido() {
-        this.id = Pedido.CONTADOR++;
+    public Pedido(int id) {
+        this.id = id;
         estado = EstadoPedido.CREADO;
         casilleroAsignado = null;
     }
 
     public void setEstado(EstadoPedido estado){
-        this.estado = estado;
+        synchronized (lockPedido){
+            this.estado = estado;
+        }
     }
 
     public void setCasilleroAsignado(Casillero casilleroAsignado) {

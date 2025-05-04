@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class EntregadorDePedido implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 100; //en milisegundos
+    private final int duracion = 1; //en milisegundos
     private final double ProbDeConfrmacion = 0.90;
 
     public EntregadorDePedido(Sistema sistema) {
@@ -19,14 +19,14 @@ public class EntregadorDePedido implements Runnable {
                 double resultado = new Random().nextDouble(1.00);
 
                 if (ProbDeConfrmacion >= resultado) {
-                    sistema.getListadoEnTransito().remove(pedido);
+                    sistema.removePedidoEnTransito(pedido);
+                    sistema.addPedidoEnEntregados(pedido);
                     pedido.setEstado(EstadoPedido.ENTREGADO);
-                    sistema.getListadoEntregados().add(pedido);
                 } else {
-                    sistema.getListadoEnTransito().remove(pedido);
-                    sistema.getListadoFallidos().add(pedido);
-                    pedido.setEstado(EstadoPedido.FALLIDO);
+                    sistema.removePedidoEnTransito(pedido);
+                    sistema.addPedidoEnFallidos(pedido);
                     sistema.getLog().incCantPedidosFallidos();
+                    pedido.setEstado(EstadoPedido.FALLIDO);
                 }
                 Thread.sleep(duracion);
             } catch (InterruptedException e) {

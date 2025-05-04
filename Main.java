@@ -9,24 +9,29 @@ public class Main {
 
         Sistema sistema = new Sistema(log);
 
-        for (int i = 0; i < 100; i++) {
-            Pedido pedido = new Pedido();
+        for (int i = 0; i < 500; i++) {
+            Pedido pedido = new Pedido(i);
             listaPedidos.add(pedido);
         }
 
-        PreparadorDePedidos preparadorDePedidos1 = new PreparadorDePedidos(sistema, listaPedidos); //Hilo 1
-        PreparadorDePedidos preparadorDePedidos2 = new PreparadorDePedidos(sistema, listaPedidos); //Hilo 2
-        PreparadorDePedidos preparadorDePedidos3 = new PreparadorDePedidos(sistema, listaPedidos); //Hilo 3
+        PreparadorDePedidos procesodePrepararDePedidos = new PreparadorDePedidos(sistema, listaPedidos);
+        DespachadorDePedidos despachadorDePedidos = new DespachadorDePedidos(sistema);
+        EntregadorDePedido entregadorDePedidos = new EntregadorDePedido(sistema);
+        VerificadorDePedido verificadorDePedidos = new VerificadorDePedido(sistema);
 
-        Thread despachadorDePedidos1 = new Thread(new DespachadorDePedidos(sistema)); //Hilo 4
-        Thread despachadorDePedidos2 = new Thread(new DespachadorDePedidos(sistema)); //Hilo 5
+        Thread preparadorDePedidos1 = new Thread(procesodePrepararDePedidos);
+        Thread preparadorDePedidos2 = new Thread(procesodePrepararDePedidos);
+        Thread preparadorDePedidos3 = new Thread(procesodePrepararDePedidos);
 
-        Thread entregadorDePedidos1 = new Thread(new EntregadorDePedido(sistema)); //Hilo 6
-        Thread entregadorDePedidos2 = new Thread(new EntregadorDePedido(sistema)); //Hilo 7
-        Thread entregadorDePedidos3 = new Thread(new EntregadorDePedido(sistema)); //Hilo 8
+        Thread despachadorDePedidos1 = new Thread(despachadorDePedidos); //Hilo 4
+        Thread despachadorDePedidos2 = new Thread(despachadorDePedidos); //Hilo 5
 
-        Thread verificadorDePedidos1 = new Thread(new VerificadorDePedido(sistema)); //Hilo 9
-        Thread verificadorDePedidos2 = new Thread(new VerificadorDePedido(sistema)); //Hilo 10
+        Thread entregadorDePedidos1 = new Thread(entregadorDePedidos); //Hilo 6
+        Thread entregadorDePedidos2 = new Thread(entregadorDePedidos); //Hilo 7
+        Thread entregadorDePedidos3 = new Thread(entregadorDePedidos); //Hilo 8
+
+        Thread verificadorDePedidos1 = new Thread(verificadorDePedidos); //Hilo 9
+        Thread verificadorDePedidos2 = new Thread(verificadorDePedidos); //Hilo 10
 
         try{
             sistema.getLog().crearArchivo();
@@ -53,7 +58,7 @@ public class Main {
                 sistema.getLog().escribirHistorial(); // Llama a tu método
                 Thread.sleep(200); // Espera 200 ms
                 contadorLog++;
-                if(contadorLog ==10){
+                if(contadorLog ==50){
                     break;
                 }
             } catch (InterruptedException e) {
@@ -61,7 +66,9 @@ public class Main {
                 break; // Termina si hay interrupción
             }
         }
-
+        //hace un recuento de la cantidad de casilleros fuera de servicio
+        sistema.refreshCantCasillerosFueraDeServicio();
+        //Imprime la estadistica final de los casilleros
         sistema.getLog().escribirFinalHistorial();
 
     }
