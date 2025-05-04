@@ -1,20 +1,27 @@
+import java.util.List;
+
 public class PreparadorDePedidos extends Thread {
     private final Sistema sistema;
     private final int duracion = 100; //en milisegundos
     private Pedido pedido;
     private final Object lockSelectPedido = new Object();
+    private final List<Pedido> listaPedidos;
 
-    public PreparadorDePedidos(Sistema sistema) {
+    public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidos) {
         this.sistema = sistema;
         pedido = null;
+        this.listaPedidos = listaPedidos;
     }
 
-    public void setPedido(Pedido pedido) {
+    public void setPedido() {
         synchronized (lockSelectPedido) {
-            if(pedido.getCasilleroAsignado()==null){
-                this.pedido = pedido;
-            }else{
-                this.pedido=null;
+            for(int i=0;i<listaPedidos.size();i++){
+                if(listaPedidos.get(i).getCasilleroAsignado()==null){
+                    this.pedido = listaPedidos.get(i);
+                    break;
+                }else{
+                    this.pedido=null;
+                }
             }
         }
     }
@@ -29,14 +36,13 @@ public class PreparadorDePedidos extends Thread {
             try {
                 int posAleatoria = sistema.getPosicionCasilleroAleatorio();
                 //-1 entonces no hay casillero vacios
-                if ( posAleatoria == -1 || pedido == null){
-                    break;
-                }
+                if ( posAleatoria != -1 && pedido != null){
                 pedido.setEstado(EstadoPedido.EN_PREPARACION);
                 sistema.getCasillero(posAleatoria).ocupar(pedido);
                 sistema.getListadoEnPreparacion().add(pedido);
                 pedido = null;
                 Thread.sleep(duracion);
+                }
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
