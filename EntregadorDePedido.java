@@ -2,9 +2,9 @@ import java.util.Random;
 
 public class EntregadorDePedido implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 50; //en milisegundos
+    private final int duracion = 0; //en milisegundos
     private int intentos =0;
-    private final int intentosMaximos = 100;
+    private final int intentosMaximos = 300;
     private final double probDeConfrmacion = 0.90;
 
     public EntregadorDePedido(Sistema sistema) {
@@ -35,7 +35,7 @@ public class EntregadorDePedido implements Runnable {
                         Thread.sleep(100);
                         intentos++;
                     }else{
-                        break;
+                        Thread.currentThread().interrupt();
                     }
                 }
             } catch (InterruptedException e) {

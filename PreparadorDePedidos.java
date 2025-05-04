@@ -2,12 +2,13 @@ import java.util.List;
 
 public class PreparadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 50; //en milisegundos
+    private final int duracion = 0; //en milisegundos
     private Pedido pedido;
     private final List<Pedido> listaPedidosPendientes;
     private boolean hayPedidos = true;
     private final Object lockSelectPedido = new Object();
-
+    private int intentos =0;
+    private final int intentosMaximos = 300;
     public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidosPendientes) {
         this.sistema = sistema;
         this.listaPedidosPendientes = listaPedidosPendientes;
@@ -17,8 +18,7 @@ public class PreparadorDePedidos implements Runnable {
     public void setPedido() {
         synchronized (lockSelectPedido) {
             if(!listaPedidosPendientes.isEmpty()){
-                    this.pedido = listaPedidosPendientes.getLast();
-                    listaPedidosPendientes.removeLast();
+                    this.pedido = listaPedidosPendientes.removeLast();
             }else{
                 hayPedidos = false;
             }
@@ -35,19 +35,23 @@ public class PreparadorDePedidos implements Runnable {
             try {
                 setPedido();
                 Casillero casilleroAleatorio = sistema.getCasilleroAleatorio();
-                //-1 entonces no hay casillero vacios
-                if ( casilleroAleatorio == null || pedido == null){
-                    break;
+
+                if ( casilleroAleatorio != null && pedido != null){
+                    pedido.setEstado(EstadoPedido.EN_PREPARACION);
+                    casilleroAleatorio.ocupar(pedido);
+                    sistema.addPedidoEnPreparacion(pedido);
+                    pedido = null;
+                    Thread.sleep(duracion);
+                    }else{
+                    if(intentos<intentosMaximos){
+                        Thread.sleep(100);
+                        intentos++;
+                    }else{
+                        break;
+                    }
                 }
-                pedido.setEstado(EstadoPedido.EN_PREPARACION);
-                casilleroAleatorio.ocupar(pedido);
-                sistema.addPedidoEnPreparacion(pedido);
-                pedido = null;
-                Thread.sleep(duracion);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                break;
             }
         }
     }

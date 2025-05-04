@@ -8,15 +8,15 @@ public class Main {
         Sistema sistema = new Sistema();
         Log log = new Log(sistema);
 
+        for (int i = 0; i < 500; i++) {
+            Pedido pedido = new Pedido(i);
+            listaPedidos.add(pedido);
+        }
+
         PreparadorDePedidos procesodePrepararDePedidos = new PreparadorDePedidos(sistema, listaPedidos);
         DespachadorDePedidos despachadorDePedidos = new DespachadorDePedidos(sistema);
         EntregadorDePedido entregadorDePedidos = new EntregadorDePedido(sistema);
         VerificadorDePedido verificadorDePedidos = new VerificadorDePedido(sistema);
-
-        for (int i = 0; i < 100; i++) {
-            Pedido pedido = new Pedido(i);
-            listaPedidos.add(pedido);
-        }
 
         Thread preparadorDePedidos1 = new Thread(procesodePrepararDePedidos);
         Thread preparadorDePedidos2 = new Thread(procesodePrepararDePedidos);
