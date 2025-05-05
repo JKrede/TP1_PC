@@ -32,7 +32,7 @@ public class Casillero {
     }
 
     /**
-     * Verifica que el casillero este ocupado y lo libera de su pedido asociado y pasa a estado VACIO
+     * Verifica que el casillero este ocupado y lo libera quitandole el pedido asignado y pasa a estado VACIO
      *
      * @Throws IllegalStateException: Si el casillero no se encuentra ocupado
      */
@@ -47,7 +47,7 @@ public class Casillero {
         }
     }
     /**
-     * Cambia el estado del casillero a fuera de servicio y borra el pedido asociado al mismo
+     * Cambia el estado del casillero a fuera de servicio y borra el pedido asignado al mismo
      *
      */
     public void sacarDeServicio() {

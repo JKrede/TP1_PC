@@ -9,10 +9,11 @@ public class Log implements Runnable {
     static final int INTERVALO_DE_CAPTURA = 200; // milisegundos
     private Sistema sistema;
     private long tiempoInicio = System.currentTimeMillis();
-    int contadorLog = 0;
-    boolean archivoCreado = false;
-    FileWriter archivo = null;
-    PrintWriter escritor = null;
+    private int contadorLog = 0;
+    private boolean archivoCreado = false;
+    private boolean procesamientoFinalizados = false;
+    private FileWriter archivo = null;
+    private PrintWriter escritor = null;
 
     public Log(Sistema sistema) {
         this.sistema = sistema;
@@ -58,10 +59,14 @@ public class Log implements Runnable {
         double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
 
         escritor.println(" ");
+        escritor.println("Estadisticas de ejecucion: ");
         escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
         escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
         escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
         escritor.println(" ");
+        for(int i = 0; i < Sistema.CANT_CASILLEROS; i++){
+            escritor.println("Casilleros "+i+" ocupado "+sistema.getCasillero(i).getVecesOcupado()+" veces");
+        }
         try {
             escritor.close();
             if (archivo != null) {
@@ -80,14 +85,15 @@ public class Log implements Runnable {
                     crearArchivo();
                     archivoCreado = true;
                 }
-                if(contadorLog < 75){
+                if(!procesamientoFinalizados){
                     escribirHistorial();
                     contadorLog++;
+                    procesamientoFinalizados = sistema.todosLosPedidosFinalizados();
                     Thread.sleep(INTERVALO_DE_CAPTURA);
                 }
                 else{
                     escribirFinalHistorial();
-                    break;
+                    Thread.currentThread().interrupt();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

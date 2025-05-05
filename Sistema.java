@@ -90,7 +90,14 @@ public class Sistema {
             return pedido;
         }
     }
-        /// a usar el log
+
+    public boolean todosLosPedidosFinalizados() {
+        if(pedidosEnPreparacion.isEmpty() && pedidosEnTransito.isEmpty() && pedidosEntregados.isEmpty()){
+            return true;
+        }
+        return false;
+    }
+
     public List<Pedido> getPedidosVerificados() {
         return pedidosVerificados;
     }
@@ -107,7 +114,7 @@ public class Sistema {
         }
         return contadorCasilleros;
     }
-        /// //////////////////////////////////
+
     public void addPedidoEnPreparacion(Pedido pedido) {
         synchronized (lockPreparacion) {
             pedidosEnPreparacion.add(pedido);
@@ -148,6 +155,5 @@ public class Sistema {
             pedidosEntregados.remove(pedido);
         }
     }
-
 
 }

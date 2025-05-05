@@ -22,7 +22,4 @@ public class Pedido {
     public Casillero getCasilleroAsignado() {
         return casilleroAsignado;
     }
-    public EstadoPedido getEstado() {
-        return estado;
-    }
 }
