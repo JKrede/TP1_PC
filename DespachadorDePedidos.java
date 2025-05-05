@@ -2,9 +2,11 @@ import java.util.Random;
 
 public class DespachadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 0; //en milisegundos
+    private final int duracion = 10; //en milisegundos
+
     private int intentos =0;
     private final int intentosMaximos = 300;
+
     private final double probInfoCorrecta = 0.85;
 
     public DespachadorDePedidos(Sistema sistema) {

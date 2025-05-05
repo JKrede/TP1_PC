@@ -33,27 +33,27 @@ public class Sistema {
     }
 
     //Usado por los preparadores de pedidos
-    public Casillero getCasilleroAleatorio() {
+    public boolean setPedidoEnCasilleroAleatorio(Pedido pedido) {
         synchronized (lockMatrizCasillero) {
-            boolean hayCasillerosVacios = false;
-            //Verifica que haya algun casillero vacio
-            for (int i = 0; i < CANT_CASILLEROS; i++){
-                if(matrizDeCasilleros[i].getEstado()==EstadoCasillero.VACIO){
-                    hayCasillerosVacios = true;
-                    break;
+            List<Integer> casillerosVacios = new ArrayList<>();
+
+            // Buscar todos los casilleros vacíos
+            for (int i = 0; i < CANT_CASILLEROS; i++) {
+                if (matrizDeCasilleros[i].getEstado() == EstadoCasillero.VACIO) {
+                    casillerosVacios.add(i);
                 }
             }
-            // Repite hasta encontrar un casillero vacío
-            while (hayCasillerosVacios) {
-                int posAleatoria = new Random().nextInt(CANT_CASILLEROS);
-                // Verificar si el casillero está vacío
-                if (getCasillero(posAleatoria).getEstado() == EstadoCasillero.VACIO) {
-                    return getCasillero(posAleatoria);
-                }
+
+            if (casillerosVacios.isEmpty()) {
+                return false;
             }
-            return null;
+            // Elije un casillero vacío al azar
+            int posAleatoria = casillerosVacios.get(new Random().nextInt(casillerosVacios.size()));
+            matrizDeCasilleros[posAleatoria].ocupar(pedido);
+            return true;
         }
     }
+
     //Usado por los despachadores de pedidos
     public Pedido getPedidoDeListaEnPreparacionAleatorio() {
         synchronized (lockPreparacion) {
@@ -97,6 +97,7 @@ public class Sistema {
     public List<Pedido> getPedidosFallidos() {
         return pedidosFallidos;
     }
+
     public int getCantCasillerosFueraDeServicio() {
         int contadorCasilleros=0;
         for(int i=0;i<CANT_CASILLEROS;i++){

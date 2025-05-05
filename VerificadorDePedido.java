@@ -2,9 +2,11 @@ import java.util.Random;
 
 public class VerificadorDePedido implements Runnable {
     private Sistema sistema;
-    private final int duracion = 0; //en milisegundos
+    private final int duracion = 30; //en milisegundos
+
     private int intentos =0;
     private final int intentosMaximos = 300;
+
     private final double probDeVerificacion = 0.95;
 
     public VerificadorDePedido(Sistema sistema) {

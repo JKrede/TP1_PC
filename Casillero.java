@@ -61,10 +61,6 @@ public class Casillero {
         synchronized (lockCasillero) {return estado;}
     }
 
-    public int getId() {
-        return id;
-    }
-
     public int getVecesOcupado() {
         return vecesOcupado;
     }

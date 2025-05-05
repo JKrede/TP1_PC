@@ -61,7 +61,7 @@ public class Log implements Runnable {
         escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
         escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
         escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
-
+        escritor.println(" ");
         try {
             escritor.close();
             if (archivo != null) {

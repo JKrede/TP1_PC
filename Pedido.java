@@ -4,7 +4,6 @@ public class Pedido {
     private final int id;
     private EstadoPedido estado;
     private Casillero casilleroAsignado;
-    private final Object lockPedido = new Object();
 
     public Pedido(int id) {
         this.id = id;
@@ -12,25 +11,18 @@ public class Pedido {
         casilleroAsignado = null;
     }
 
-    public void setEstado(EstadoPedido estado){
-        synchronized (lockPedido){
-            this.estado = estado;
-        }
+    public void setEstado(EstadoPedido estado) {
+        this.estado = estado;
     }
 
     public void setCasilleroAsignado(Casillero casilleroAsignado) {
         this.casilleroAsignado = casilleroAsignado;
     }
 
-    public EstadoPedido getEstado(){
-        return estado;
-    }
-
-    public Casillero getCasilleroAsignado(){
+    public Casillero getCasilleroAsignado() {
         return casilleroAsignado;
     }
-
-    public int getId(){
-        return id;
+    public EstadoPedido getEstado() {
+        return estado;
     }
 }
