@@ -2,10 +2,14 @@ import java.util.List;
 
 public class PreparadorDePedidos implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 20; //en milisegundos
+    private final int duracionProceso = 50; //en milisegundos
+    private final int duracionEspera = 100; //en milisegundos
+    private final int intentosMaximos = 20;
+
     private final List<Pedido> listaPedidosPendientes;
     private final Object lockSelectPedido = new Object();
-    private final int intentosMaximos = 25;
+
+    //La duracion maxima de espera es intentosMaximo*duracionEspera
 
     public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidosPendientes) {
         this.sistema = sistema;
@@ -13,9 +17,9 @@ public class PreparadorDePedidos implements Runnable {
     }
 
     /**
-     * Devuelve un pedido de la lista de pedidos pendientes y si la lista esta vacia devuelve null
+     * Obtiene y elimina un pedido de la lista de pedidos pendientes.
      *
-     * @return Pedido: El pedido tomado de la lista por el preparador
+     * @return El pedido tomado de la lista, o {@code null} si no hay pedidos disponibles.
      */
     public Pedido obtenerPedido() {
         synchronized (lockSelectPedido) {
@@ -29,15 +33,13 @@ public class PreparadorDePedidos implements Runnable {
 
 
     /**
-     * Obtiene un pedido mediante el metodo obtenerPedido().
-     * Si el pedido es null significa que la lista ya no tiene mas pedidos y el hilo finaliza su ejecucion saliendo del while.
-     * Si el pedido es un pedido, entonces intenta colocarlo en un casillero aleatorio de la matriz de casilleros, si no fue posible agregar
-     * el pedido a la matriz de casilleros espera 100 milisegundos y vuelve a intentarlo las veces establecidas en intentosMaximos.
-     * Si supera la cantidad de intentosMaximos el hilo finaliza su ejecucion saliendo del while.
-     *
-     * @Param pedido: El pedido a agregar en el casillero aleatorio
-     * @Param intento: contador de intentos realizados
-     *
+     * Hilo que gestiona la asignación de pedidos a casilleros disponibles.
+     * <p>
+     * Si no hay pedidos disponibles o no se puede asignar un pedido tras varios intentos,
+     * el hilo finaliza su ejecución.
+     * </p>
+     * @see Sistema#setPedidoEnCasilleroAleatorio(Pedido)
+     * @see Sistema#addPedidoEnPreparacion(Pedido)
      */
     @Override
     public void run() {
@@ -47,20 +49,20 @@ public class PreparadorDePedidos implements Runnable {
             // Si no tengo pedido, lo traigo de la lista
             if (pedido == null) {
                 pedido = obtenerPedido();
-                if (pedido == null) break;  // no quedan más pedidos
+                if (pedido == null) break;  // llega aqui si no quedan más pedidos pendientes
             }
 
             try {
-                // Agrega el pedido en un casillero aleat
+                // Agrega el pedido en un casillero vacio aleatorio
                 boolean agregado = sistema.setPedidoEnCasilleroAleatorio(pedido);
                 if (agregado) {
                     pedido.setEstado(EstadoPedido.EN_PREPARACION);
                     sistema.addPedidoEnPreparacion(pedido);
                     pedido = null;
                     intentos = 0;
-                    Thread.sleep(duracion);
+                    Thread.sleep(duracionProceso);
                 } else if (intentos< intentosMaximos) {
-                    Thread.sleep(100);
+                    Thread.sleep(duracionEspera);
                     intentos++;
                 } else {
                     Thread.currentThread().interrupt();

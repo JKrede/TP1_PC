@@ -4,43 +4,95 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+/**
+ * Clase que gestiona el registro de información del sistema en un archivo de log.
+ * Se encarga de capturar el estado del sistema periódicamente y guardar estadísticas
+ * de pedidos y casilleros en un archivo de texto.
+ * 
+ * Implementa la interfaz {@link Runnable} para ejecutarse en un hilo independiente.
+ * 
+ * @author [Tu nombre]
+ * @version 1.0
+ */
 public class Log implements Runnable {
 
-    static final int INTERVALO_DE_CAPTURA = 200; // milisegundos
+    /** Intervalo de captura en milisegundos. */
+    static final int INTERVALO_DE_CAPTURA = 200;
+
+    /** Sistema principal que contiene la información sobre pedidos y casilleros. */
     private Sistema sistema;
+
+    /** Tiempo de inicio de la ejecución del log. */
     private long tiempoInicio = System.currentTimeMillis();
+
+    /** Contador para las capturas registradas. */
     private int contadorLog = 0;
+
+    /** Indica si el archivo de log ya fue creado. */
     private boolean archivoCreado = false;
+
+    /** Indica si se han finalizado todos los procesos de pedidos. */
     private boolean procesamientoFinalizados = false;
+
+    /** Referencia al archivo de log. */
     private FileWriter archivo = null;
+
+    /** Objeto para escribir texto en el archivo de log. */
     private PrintWriter escritor = null;
 
+    /**
+     * Constructor de la clase Log.
+     *
+     * @param sistema Sistema principal del que se obtiene la información de los pedidos.
+     * @throws NullPointerException si el sistema proporcionado es null.
+     */
     public Log(Sistema sistema) {
         this.sistema = sistema;
     }
 
+    /**
+     * Obtiene la fecha actual formateada.
+     *
+     * @return La fecha actual como cadena en formato "dd/MM HH:mm:ss".
+     */
     public String getFecha() {
         Calendar calendario = Calendar.getInstance();
         SimpleDateFormat fecha = new SimpleDateFormat("dd/MM HH:mm:ss");
         return fecha.format(calendario.getTime());
     }
 
+    /**
+     * Obtiene la hora actual con mayor detalle.
+     *
+     * @return La hora actual como cadena en formato "HH:mm:ss:SSS".
+     */
     public String getHora() {
         Calendar calendario = Calendar.getInstance();
         SimpleDateFormat hora = new SimpleDateFormat("HH:mm:ss:SSS");
         return hora.format(calendario.getTime());
     }
 
-    public void crearArchivo()  {
-        try{
-                String fecha = this.getFecha().replace("/", "-").replace(":", "_");
-                archivo = new FileWriter("Log_" + fecha + ".txt");
-                escritor = new PrintWriter(archivo, true);
+    /**
+     * Crea un archivo de log con nombre basado en la fecha actual.
+     *
+     * @throws IOException Si ocurre un error al crear el archivo.
+     */
+    public void crearArchivo() {
+        try {
+            String fecha = this.getFecha().replace("/", "-").replace(":", "_");
+            archivo = new FileWriter("Log_" + fecha + ".txt");
+            escritor = new PrintWriter(archivo, true);
         } catch (IOException e) {
-                System.out.println("algo salio mal: "+e.getMessage());
+            System.out.println("Algo salió mal al crear el archivo: " + e.getMessage());
         }
     }
 
+    /**
+     * Escribe en el log el estado actual del sistema, incluyendo la cantidad
+     * de pedidos verificados y pedidos fallidos.
+     *
+     * @throws IllegalStateException Si el archivo no ha sido inicializado.
+     */
     public void escribirHistorial() {
         if (escritor == null) {
             throw new IllegalStateException("Archivo no inicializado");
@@ -51,6 +103,13 @@ public class Log implements Runnable {
         escritor.flush();
     }
 
+    /**
+     * Escribe en el log estadísticas finales del sistema, como el tiempo total 
+     * de ejecución, número de casilleros disponibles y una lista del estado 
+     * de los casilleros.
+     *
+     * @throws IllegalStateException Si el archivo no ha sido inicializado.
+     */
     public void escribirFinalHistorial() {
         if (escritor == null) {
             throw new IllegalStateException("Archivo no inicializado.");
@@ -59,13 +118,13 @@ public class Log implements Runnable {
         double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
 
         escritor.println(" ");
-        escritor.println("Estadisticas de ejecucion: ");
+        escritor.println("Estadísticas de ejecución: ");
         escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
         escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
-        escritor.println("Tiempo total de ejecución: "+ tiempoTotal+" segundos");
+        escritor.println("Tiempo total de ejecución: " + tiempoTotal + " segundos");
         escritor.println(" ");
-        for(int i = 0; i < Sistema.CANT_CASILLEROS; i++){
-            escritor.println("Casilleros "+i+" ocupado "+sistema.getCasillero(i).getVecesOcupado()+" veces");
+        for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
+            escritor.println("Casillero " + i + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces");
         }
         try {
             escritor.close();
@@ -77,21 +136,25 @@ public class Log implements Runnable {
         }
     }
 
+    /**
+     * Ejecuta el proceso de registro en un hilo independiente.
+     * Mientras el hilo no sea interrumpido, toma capturas periódicas del estado del sistema
+     * y finaliza escribiendo un resumen de estadísticas al finalizar el procesamiento.
+     */
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                if(!archivoCreado){
+                if (!archivoCreado) {
                     crearArchivo();
                     archivoCreado = true;
                 }
-                if(!procesamientoFinalizados){
+                if (!procesamientoFinalizados) {
                     escribirHistorial();
                     contadorLog++;
                     procesamientoFinalizados = sistema.todosLosPedidosFinalizados();
                     Thread.sleep(INTERVALO_DE_CAPTURA);
-                }
-                else{
+                } else {
                     escribirFinalHistorial();
                     Thread.currentThread().interrupt();
                 }

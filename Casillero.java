@@ -12,11 +12,12 @@ public class Casillero {
         estado = EstadoCasillero.VACIO;
         vecesOcupado = 0;
     }
+
     /**
-     * Verifica que el casillero este vacio y lo ocupa con el pedido pasado por argumento
+     * Ocupa el casillero con el pedido recibido si está vacío.
      *
-     * @Param pedido: El pedido con el cual se va a ocupar el casillero
-     * @Throws IllegalStateException: Si el casillero no se encuentra ocupado
+     * @param pedido El pedido con el cual se ocupará el casillero.
+     * @throws IllegalStateException Si el casillero ya está ocupado.
      */
     public void ocupar(Pedido pedido) {
        synchronized (lockCasillero) {
@@ -32,9 +33,9 @@ public class Casillero {
     }
 
     /**
-     * Verifica que el casillero este ocupado y lo libera quitandole el pedido asignado y pasa a estado VACIO
+     * Libera el casillero si actualmente está ocupado.
      *
-     * @Throws IllegalStateException: Si el casillero no se encuentra ocupado
+     * @throws IllegalStateException Si el casillero ya está vacío.
      */
     public void liberar() {
         synchronized (lockCasillero) {
@@ -46,9 +47,9 @@ public class Casillero {
             }
         }
     }
+
     /**
-     * Cambia el estado del casillero a fuera de servicio y borra el pedido asignado al mismo
-     *
+     * Marca el casillero como fuera de servicio y elimina cualquier pedido asignado.
      */
     public void sacarDeServicio() {
         synchronized (lockCasillero) {
@@ -57,10 +58,20 @@ public class Casillero {
         }
     }
 
+    /**
+     * Obtiene el estado actual del casillero.
+     *
+     * @return El estado del casillero.
+     */
     public EstadoCasillero getEstado() {
         synchronized (lockCasillero) {return estado;}
     }
 
+    /**
+     * Obtiene la cantidad de veces que el casillero fue ocupado.
+     *
+     * @return Número de veces que fue ocupado.
+     */
     public int getVecesOcupado() {
         return vecesOcupado;
     }

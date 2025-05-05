@@ -2,8 +2,9 @@ import java.util.Random;
 
 public class EntregadorDePedido implements Runnable {
     private final Sistema sistema;
-    private final int duracion = 50; //en milisegundos
-    private final int intentosMaximos = 25;
+    private final int duracionProceso = 100; //en milisegundos
+    private final int duracionEspera = 100; //en milisegundos
+    private final int intentosMaximos = 20;
     private final double probDeConfrmacion = 0.90;
 
     public EntregadorDePedido(Sistema sistema) {
@@ -11,15 +12,13 @@ public class EntregadorDePedido implements Runnable {
     }
 
     /**
-     * Obtiene un pedido de la lista de pedidos en transito de sistema mediante el metodo getPedidoDeListaEnTransitoAleatorio().
-     * Si el pedido es null significa que la lista no tiene pedidos por lo tanto espera 100 milisegundos y vuelve a intentarlo
-     * si lo intenta la cantidad de veces intentosMaximos y no logra obtener un pedido entonces finaliza su ejecucion.
-     * Si el pedido no es null a partir del resultado del experimento aleatorio:
-     * -Si el resultado es exitoso el pedido es agregado a la lista de pedidos entregados y se cambia el estado del pedido a ENTREGADO
-     * -Si el resultado no es exitoso el pedido es agregado a la lista de pedidos fallidos y se cambia el estado del pedido a FALLIDO
-     *
-     * @Param intento: contador de intentos realizados
-     *
+     * Hilo que simula el proceso de entrega de pedidos en transito,
+     * aplicando una probabilidad para determinar si son entregados o fallidos.
+     * <p>
+     * Si no hay pedidos disponibles, realiza varios intentos antes de detenerse.
+     * Si el hilo es interrumpido, finaliza su ejecución.
+     * </p>
+     * @see Sistema#getPedidoDeListaEnTransitoAleatorio()
      */
     @Override
     public void run() {
@@ -42,10 +41,10 @@ public class EntregadorDePedido implements Runnable {
                         pedido.setEstado(EstadoPedido.FALLIDO);
                         intentos = 0;
                     }
-                    Thread.sleep(duracion);
+                    Thread.sleep(duracionProceso);
                 }else{
                     if(intentos<intentosMaximos){
-                        Thread.sleep(100);
+                        Thread.sleep(duracionEspera);
                         intentos++;
                     }else{
                         Thread.currentThread().interrupt();

@@ -25,6 +25,11 @@ public class Sistema {
         }
     }
 
+    /**
+     *
+     * @param index: indice d
+     * @return
+     */
     public Casillero getCasillero(int index) {
         if (index < 0 || index >= CANT_CASILLEROS) {
             throw new IndexOutOfBoundsException("Índice de casillero inválido");
