@@ -5,7 +5,7 @@ public class EntregadorDePedido implements Runnable {
     private final int duracionProceso = 100; //en milisegundos
     private final int duracionEspera = 100; //en milisegundos
     private final int intentosMaximos = 20;
-    private final double probDeConfrmacion = 0.90;
+    private final double probDeConfirmacion = 0.90;
 
     public EntregadorDePedido(Sistema sistema) {
         this.sistema = sistema;
@@ -30,7 +30,7 @@ public class EntregadorDePedido implements Runnable {
                     //Devuelve un double entre 0.00 y 1.00 que representa el resultado probabilistico de la verificacion
                     double resultado = new Random().nextDouble();
 
-                    if (resultado <= probDeConfrmacion) {
+                    if (resultado <= probDeConfirmacion) {
                         sistema.removePedidoEnTransito(pedido);
                         sistema.addPedidoEnEntregados(pedido);
                         pedido.setEstado(EstadoPedido.ENTREGADO);

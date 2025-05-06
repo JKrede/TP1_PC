@@ -4,40 +4,14 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-/**
- * Clase que gestiona el registro de información del sistema en un archivo de log.
- * Se encarga de capturar el estado del sistema periódicamente y guardar estadísticas
- * de pedidos y casilleros en un archivo de texto.
- * 
- * Implementa la interfaz {@link Runnable} para ejecutarse en un hilo independiente.
- * 
- * @author [Tu nombre]
- * @version 1.0
- */
 public class Log implements Runnable {
 
-    /** Intervalo de captura en milisegundos. */
     static final int INTERVALO_DE_CAPTURA = 200;
-
-    /** Sistema principal que contiene la información sobre pedidos y casilleros. */
     private Sistema sistema;
-
-    /** Tiempo de inicio de la ejecución del log. */
     private long tiempoInicio = System.currentTimeMillis();
-
-    /** Contador para las capturas registradas. */
-    private int contadorLog = 0;
-
-    /** Indica si el archivo de log ya fue creado. */
     private boolean archivoCreado = false;
-
-    /** Indica si se han finalizado todos los procesos de pedidos. */
     private boolean procesamientoFinalizados = false;
-
-    /** Referencia al archivo de log. */
     private FileWriter archivo = null;
-
-    /** Objeto para escribir texto en el archivo de log. */
     private PrintWriter escritor = null;
 
     /**
@@ -100,6 +74,7 @@ public class Log implements Runnable {
         escritor.println(getHora());
         escritor.println("Pedidos verificados: " + sistema.getPedidosVerificados().size());
         escritor.println("Pedidos fallidos: " + sistema.getPedidosFallidos().size());
+        escritor.println(" ");
         escritor.flush();
     }
 
@@ -116,15 +91,14 @@ public class Log implements Runnable {
         }
         long tiempoFinal = System.currentTimeMillis();
         double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
-
-        escritor.println(" ");
+        double tiempoTotalRedondeado = Math.round(tiempoTotal * 100) / 100.0;
         escritor.println("Estadísticas de ejecución: ");
         escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
         escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
-        escritor.println("Tiempo total de ejecución: " + tiempoTotal + " segundos");
+        escritor.println("Tiempo total de ejecución: " + tiempoTotalRedondeado + " segundos");
         escritor.println(" ");
         for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
-            escritor.println("Casillero " + i + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces");
+            escritor.println("Casillero " + i + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces, estado: " + sistema.getCasillero(i).getEstado());
         }
         try {
             escritor.close();
@@ -151,7 +125,6 @@ public class Log implements Runnable {
                 }
                 if (!procesamientoFinalizados) {
                     escribirHistorial();
-                    contadorLog++;
                     procesamientoFinalizados = sistema.todosLosPedidosFinalizados();
                     Thread.sleep(INTERVALO_DE_CAPTURA);
                 } else {

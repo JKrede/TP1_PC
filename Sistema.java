@@ -125,36 +125,43 @@ public class Sistema {
             pedidosEnPreparacion.add(pedido);
         }
     }
+
     public void addPedidoEnTransito(Pedido pedido) {
         synchronized (lockTransito) {
             pedidosEnTransito.add(pedido);
         }
     }
+
     public void addPedidoEnEntregados(Pedido pedido) {
         synchronized (lockEntrega) {
             pedidosEntregados.add(pedido);
         }
     }
+
     public void addPedidoEnVerificados(Pedido pedido) {
         synchronized (lockVerificacion) {
             pedidosVerificados.add(pedido);
         }
     }
+
     public void addPedidoEnFallidos(Pedido pedido) {
         synchronized (lockFallido) {
             pedidosFallidos.add(pedido);
         }
     }
+
     public void removePedidoEnPreparacion(Pedido pedido) {
         synchronized (lockPreparacion) {
             pedidosEnPreparacion.remove(pedido);
         }
     }
+
     public void removePedidoEnTransito(Pedido pedido) {
         synchronized (lockTransito) {
             pedidosEnTransito.remove(pedido);
         }
     }
+
     public void removePedidoEnEntregados(Pedido pedido) {
         synchronized (lockEntrega) {
             pedidosEntregados.remove(pedido);
