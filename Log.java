@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.ArrayList;
 
 /**
  * Clase que gestiona el registro de información del sistema en un archivo de log.
@@ -103,6 +104,104 @@ public class Log implements Runnable {
         escritor.flush();
     }
 
+    //Este metodo busca los casilleros o el casillero con mas ocupaciones, ademas que tambien nos dice su estado
+
+    public void ImprimirCasilleroMasOcupado() {
+        ArrayList<Casillero> casillerosMasOcupados = new ArrayList<>();
+        int maxOcupaciones = -1;
+    
+        // Buscar la mayor cantidad de ocupaciones y los casilleros que la tienen
+        for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
+            Casillero actual = sistema.getCasillero(i);
+            int ocupaciones = actual.getVecesOcupado();
+    
+            if (ocupaciones > maxOcupaciones) {
+                maxOcupaciones = ocupaciones;
+                casillerosMasOcupados.clear();
+                casillerosMasOcupados.add(actual);
+            } else if (ocupaciones == maxOcupaciones) {
+                casillerosMasOcupados.add(actual);
+            }
+        }
+    
+        // Imprimir el resultado
+        if (casillerosMasOcupados.size() == 1) {
+            Casillero c = casillerosMasOcupados.get(0);
+            if (c.getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                escritor.println("El casillero más ocupado es el " + c.getId() +
+                    " con " + c.getVecesOcupado() + " ocupaciones, pero está fuera de servicio.");
+            } else if (c.getEstado() == EstadoCasillero.VACIO) {
+                escritor.println("El casillero más ocupado es el " + c.getId() +
+                    " con " + c.getVecesOcupado() + " ocupaciones, pero está vacío.");
+            } else
+            escritor.println("El casillero más ocupado es el " + c.getId() +
+                " con " + c.getVecesOcupado() + " ocupaciones.");
+        } else {
+            escritor.println("Los casilleros más ocupados son:");
+            for (Casillero c : casillerosMasOcupados) {
+                if (c.getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                    escritor.println("- Casillero " + c.getId() + " con " +
+                        c.getVecesOcupado() + " ocupaciones, pero está fuera de servicio.");
+                } else if (c.getEstado() == EstadoCasillero.VACIO) {
+                    escritor.println("- Casillero " + c.getId() + " con " +
+                        c.getVecesOcupado() + " ocupaciones, pero está vacío.");
+                } else
+                escritor.println("- Casillero " + c.getId() + " con " +
+                    c.getVecesOcupado() + " ocupaciones.");
+            }
+        }
+    }
+
+    //Este metodo busca los casilleros o el casillero con menos ocupaciones, ademas que tambien nos dice su estado
+
+    public void ImprimirCasilleroMenosOcupado() {
+        ArrayList<Casillero> casillerosMenosOcupados = new ArrayList<>();
+        int minOcupaciones = Integer.MAX_VALUE;
+    
+        // Buscar la menor cantidad de ocupaciones y los casilleros que la tienen
+        for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
+            Casillero actual = sistema.getCasillero(i);
+            int ocupaciones = actual.getVecesOcupado();
+    
+            if (ocupaciones < minOcupaciones) {
+                minOcupaciones = ocupaciones;
+                casillerosMenosOcupados.clear();
+                casillerosMenosOcupados.add(actual);
+            } else if (ocupaciones == minOcupaciones) {
+                casillerosMenosOcupados.add(actual);
+            }
+        }
+    
+        // Imprimir el resultado
+        if (casillerosMenosOcupados.size() == 1) {
+            Casillero c = casillerosMenosOcupados.get(0);
+            if (c.getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                escritor.println("El casillero menos ocupado es el " + c.getId() +
+                    " con " + c.getVecesOcupado() + " ocupaciones, pero está fuera de servicio.");
+            } else if (c.getEstado() == EstadoCasillero.VACIO) {
+                escritor.println("El casillero menos ocupado es el " + c.getId() +
+                    " con " + c.getVecesOcupado() + " ocupaciones, pero está vacío.");
+            } else {
+                escritor.println("El casillero menos ocupado es el " + c.getId() +
+                    " con " + c.getVecesOcupado() + " ocupaciones.");
+            }
+        } else {
+            escritor.println("Los casilleros menos ocupados son:");
+            for (Casillero c : casillerosMenosOcupados) {
+                if (c.getEstado() == EstadoCasillero.FUERA_DE_SERVICIO) {
+                    escritor.println("- Casillero " + c.getId() + " con " +
+                        c.getVecesOcupado() + " ocupaciones, pero está fuera de servicio.");
+                } else if (c.getEstado() == EstadoCasillero.VACIO) {
+                    escritor.println("- Casillero " + c.getId() + " con " +
+                        c.getVecesOcupado() + " ocupaciones, pero está vacío.");
+                } else {
+                    escritor.println("- Casillero " + c.getId() + " con " +
+                        c.getVecesOcupado() + " ocupaciones.");
+                }
+            }
+        }
+    }
+    
     /**
      * Escribe en el log estadísticas finales del sistema, como el tiempo total 
      * de ejecución, número de casilleros disponibles y una lista del estado 
@@ -124,8 +223,10 @@ public class Log implements Runnable {
         escritor.println("Tiempo total de ejecución: " + tiempoTotal + " segundos");
         escritor.println(" ");
         for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
-            escritor.println("Casillero " + i + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces");
+            escritor.println("Casillero " + sistema.getCasillero(i).getId() + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces");
         }
+        ImprimirCasilleroMenosOcupado();
+        ImprimirCasilleroMasOcupado();
         try {
             escritor.close();
             if (archivo != null) {

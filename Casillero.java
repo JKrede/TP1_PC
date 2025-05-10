@@ -66,7 +66,9 @@ public class Casillero {
     public EstadoCasillero getEstado() {
         synchronized (lockCasillero) {return estado;}
     }
-
+    public int getId () {
+        return id;
+    }
     /**
      * Obtiene la cantidad de veces que el casillero fue ocupado.
      *
