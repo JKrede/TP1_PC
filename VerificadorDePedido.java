@@ -1,13 +1,14 @@
 import java.util.Random;
 
 public class VerificadorDePedido implements Runnable {
-    private Sistema sistema;
+
+    private SistemaDeLogistica sistema;
     private final int duracionProceso = 90; //en milisegundos
     private final int duracionEspera = 100; //en milisegundos
     private final int intentosMaximos = 20;
     private final double probDeVerificacion = 0.95;
 
-    public VerificadorDePedido(Sistema sistema) {
+    public VerificadorDePedido(SistemaDeLogistica sistema) {
         this.sistema = sistema;
     }
 
@@ -18,7 +19,7 @@ public class VerificadorDePedido implements Runnable {
      * Si no hay pedidos disponibles, realiza varios intentos antes de detenerse.
      * Si el hilo es interrumpido, finaliza su ejecución.
      * </p>
-     * @see Sistema#getPedidoDeListaEntregadosAleatorio()
+     * @see SistemaDeLogistica#getPedidoDeListaEntregadosAleatorio()
      */
     @Override
     public void run() {
@@ -32,12 +33,10 @@ public class VerificadorDePedido implements Runnable {
                         double resultado = new Random().nextDouble();
 
                         if (resultado <= probDeVerificacion) {
-                            sistema.removePedidoEnEntregados(pedido);
                             sistema.addPedidoEnVerificados(pedido);
                             pedido.setEstado(EstadoPedido.VERIFICADO);
                             intentos = 0;
                         } else {
-                            sistema.removePedidoEnEntregados(pedido);
                             sistema.addPedidoEnFallidos(pedido);
                             pedido.setEstado(EstadoPedido.FALLIDO);
                             intentos = 0;

@@ -7,7 +7,7 @@ import java.util.Calendar;
 public class Log implements Runnable {
 
     static final int INTERVALO_DE_CAPTURA = 200;
-    private Sistema sistema;
+    private SistemaDeLogistica sistema;
     private long tiempoInicio = System.currentTimeMillis();
     private boolean archivoCreado = false;
     private boolean procesamientoFinalizados = false;
@@ -20,7 +20,7 @@ public class Log implements Runnable {
      * @param sistema Sistema principal del que se obtiene la información de los pedidos.
      * @throws NullPointerException si el sistema proporcionado es null.
      */
-    public Log(Sistema sistema) {
+    public Log(SistemaDeLogistica sistema) {
         this.sistema = sistema;
     }
 
@@ -93,11 +93,11 @@ public class Log implements Runnable {
         double tiempoTotal = (tiempoFinal - tiempoInicio) / 1000.0;
         double tiempoTotalRedondeado = Math.round(tiempoTotal * 100) / 100.0;
         escritor.println("Estadísticas de ejecución: ");
-        escritor.println("Casilleros disponibles: " + (Sistema.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
+        escritor.println("Casilleros disponibles: " + (SistemaDeLogistica.CANT_CASILLEROS - sistema.getCantCasillerosFueraDeServicio()));
         escritor.println("Casilleros fuera de servicio: " + sistema.getCantCasillerosFueraDeServicio());
         escritor.println("Tiempo total de ejecución: " + tiempoTotalRedondeado + " segundos");
         escritor.println(" ");
-        for (int i = 0; i < Sistema.CANT_CASILLEROS; i++) {
+        for (int i = 0; i < SistemaDeLogistica.CANT_CASILLEROS; i++) {
             escritor.println("Casillero " + i + " ocupado " + sistema.getCasillero(i).getVecesOcupado() + " veces, estado: " + sistema.getCasillero(i).getEstado());
         }
         try {

@@ -19,7 +19,7 @@ public class Casillero {
      * @param pedido El pedido con el cual se ocupará el casillero.
      * @throws IllegalStateException Si el casillero ya está ocupado.
      */
-    public void ocupar(Pedido pedido) {
+    public void ocupar(Pedido pedido) throws IllegalStateException {
        synchronized (lockCasillero) {
            if (this.estado == EstadoCasillero.VACIO) {
                this.pedido = pedido;

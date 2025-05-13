@@ -1,13 +1,14 @@
 import java.util.Random;
 
 public class DespachadorDePedidos implements Runnable {
-    private final Sistema sistema;
+
+    private final SistemaDeLogistica sistema;
     private final int duracionProceso = 70; //en milisegundos
     private final int duracionEspera = 70; //en milisegundos
     private final int intentosMaximos = 20;
     private final double probInfoCorrecta = 0.85;
 
-    public DespachadorDePedidos(Sistema sistema) {
+    public DespachadorDePedidos(SistemaDeLogistica sistema) {
         this.sistema = sistema;
     }
 
@@ -18,7 +19,7 @@ public class DespachadorDePedidos implements Runnable {
      * Si no hay pedidos disponibles, realiza varios intentos antes de detenerse.
      * Si el hilo es interrumpido, finaliza su ejecución.
      * </p>
-     * @see Sistema#getPedidoDeListaEnPreparacionAleatorio()
+     * @see SistemaDeLogistica#getPedidoDeListaEnPreparacionAleatorio()
      */
     @Override
     public void run() {
@@ -35,16 +36,14 @@ public class DespachadorDePedidos implements Runnable {
                     Casillero casillero = pedido.getCasilleroAsignado();
                     if (resultado <= probInfoCorrecta) {
                         casillero.liberar();
-                        sistema.removePedidoEnPreparacion(pedido);
                         sistema.addPedidoEnTransito(pedido);
                         pedido.setEstado(EstadoPedido.EN_TRANSITO);
-                        intentos =0;
+                        intentos = 0;
                     } else {
                         casillero.sacarDeServicio();
-                        sistema.removePedidoEnPreparacion(pedido);
                         sistema.addPedidoEnFallidos( pedido);
                         pedido.setEstado(EstadoPedido.FALLIDO);
-                        intentos =0;
+                        intentos = 0;
                     }
                     Thread.sleep(duracionProceso);
                 }else{

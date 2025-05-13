@@ -2,11 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+
     static final int CANT_PEDIDOS = 500;
 
     public static void main(String[] args){
+
         List<Pedido> listaPedidos = new ArrayList<>();
-        Sistema sistema = new Sistema();
+        SistemaDeLogistica sistema = new SistemaDeLogistica();
         Log log = new Log(sistema);
 
         for (int i = 0; i < CANT_PEDIDOS; i++) {

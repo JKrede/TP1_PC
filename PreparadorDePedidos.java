@@ -1,7 +1,8 @@
 import java.util.List;
 
 public class PreparadorDePedidos implements Runnable {
-    private final Sistema sistema;
+
+    private final SistemaDeLogistica sistema;
     private final int duracionProceso = 50; //en milisegundos
     private final int duracionEspera = 100; //en milisegundos
     private final int intentosMaximos = 20;
@@ -11,7 +12,7 @@ public class PreparadorDePedidos implements Runnable {
 
     //La duracion maxima de espera es intentosMaximo*duracionEspera
 
-    public PreparadorDePedidos(Sistema sistema, List<Pedido> listaPedidosPendientes) {
+    public PreparadorDePedidos(SistemaDeLogistica sistema, List<Pedido> listaPedidosPendientes) {
         this.sistema = sistema;
         this.listaPedidosPendientes = listaPedidosPendientes;
     }
@@ -38,13 +39,13 @@ public class PreparadorDePedidos implements Runnable {
      * Si no hay pedidos disponibles o no se puede asignar un pedido tras varios intentos,
      * el hilo finaliza su ejecución.
      * </p>
-     * @see Sistema#setPedidoEnCasilleroAleatorio(Pedido)
-     * @see Sistema#addPedidoEnPreparacion(Pedido)
+     * @see SistemaDeLogistica#setPedidoEnCasilleroAleatorio(Pedido)
+     * @see SistemaDeLogistica#addPedidoEnPreparacion(Pedido)
      */
     @Override
     public void run() {
         Pedido pedido = null;
-        int intentos =0;
+        int intentos = 0;
         while (!Thread.currentThread().isInterrupted()) {
             // Si no tengo pedido, lo traigo de la lista
             if (pedido == null) {

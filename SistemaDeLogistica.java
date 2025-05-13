@@ -2,7 +2,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Sistema {
+public class SistemaDeLogistica {
+
     public static final int CANT_CASILLEROS = 200;
     private final Casillero[] matrizDeCasilleros = new Casillero[CANT_CASILLEROS];
 
@@ -12,14 +13,13 @@ public class Sistema {
     private final List<Pedido> pedidosVerificados = new ArrayList<>();
     private final List<Pedido> pedidosFallidos = new ArrayList<>();
 
-    private final Object lockMatrizCasillero = new Object();
     private final Object lockPreparacion = new Object();
     private final Object lockTransito = new Object();
     private final Object lockEntrega = new Object();
     private final Object lockVerificacion = new Object();
     private final Object lockFallido = new Object();
 
-    public Sistema() {
+    public SistemaDeLogistica() {
         for (int i = 0; i < CANT_CASILLEROS; i++) {
             matrizDeCasilleros[i] = new Casillero(i);
         }
@@ -39,7 +39,6 @@ public class Sistema {
 
     //Usado por los preparadores de pedidos
     public boolean setPedidoEnCasilleroAleatorio(Pedido pedido) {
-        synchronized (lockMatrizCasillero) {
             List<Integer> casillerosVacios = new ArrayList<>();
 
             // Buscar todos los casilleros vacíos
@@ -52,11 +51,14 @@ public class Sistema {
             if (casillerosVacios.isEmpty()) {
                 return false;
             }
-            // Elije un casillero vacío al azar
-            int posAleatoria = casillerosVacios.get(new Random().nextInt(casillerosVacios.size()));
-            matrizDeCasilleros[posAleatoria].ocupar(pedido);
-            return true;
-        }
+            try{
+                int posAleatoria = casillerosVacios.get(new Random().nextInt(casillerosVacios.size()));
+                //verifica nuevamente que el casillero no haya sido ocupado por otro pedido antes de asignarlo
+                matrizDeCasilleros[posAleatoria].ocupar(pedido);
+                return true;
+            } catch (IllegalStateException e) {
+                return false;
+            }
     }
 
     //Usado por los despachadores de pedidos
@@ -111,7 +113,7 @@ public class Sistema {
     }
 
     public int getCantCasillerosFueraDeServicio() {
-        int contadorCasilleros=0;
+        int contadorCasilleros = 0;
         for(int i=0;i<CANT_CASILLEROS;i++){
             if(matrizDeCasilleros[i].getEstado()==EstadoCasillero.FUERA_DE_SERVICIO){
                 contadorCasilleros++;
@@ -147,24 +149,6 @@ public class Sistema {
     public void addPedidoEnFallidos(Pedido pedido) {
         synchronized (lockFallido) {
             pedidosFallidos.add(pedido);
-        }
-    }
-
-    public void removePedidoEnPreparacion(Pedido pedido) {
-        synchronized (lockPreparacion) {
-            pedidosEnPreparacion.remove(pedido);
-        }
-    }
-
-    public void removePedidoEnTransito(Pedido pedido) {
-        synchronized (lockTransito) {
-            pedidosEnTransito.remove(pedido);
-        }
-    }
-
-    public void removePedidoEnEntregados(Pedido pedido) {
-        synchronized (lockEntrega) {
-            pedidosEntregados.remove(pedido);
         }
     }
 
